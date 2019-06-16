@@ -2,9 +2,8 @@
 
 namespace Niyam\ACL\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use Niyam\Infrastructure\BaseModel;
 
-class Tag extends Model
+class Tag extends BaseModel
 {
-    protected $guarded = ['id'];
 }

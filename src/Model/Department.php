@@ -2,9 +2,8 @@
 
 namespace Niyam\ACL\Model;
 
-use Illuminate\Database\Eloquent\Model;
+use Niyam\Infrastructure\BaseModel;
 
-class Department extends Model
+class Department extends BaseModel
 {
-    protected $guarded = ['id'];
 }

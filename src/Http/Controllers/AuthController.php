@@ -2,11 +2,9 @@
 
 namespace Niyam\ACL\Http\Controllers;
 
-use Validator;
 use Niyam\ACL\Model\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
-use Firebase\JWT\ExpiredException;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Lumen\Routing\Controller as BaseController;
 
@@ -67,7 +65,7 @@ class AuthController extends BaseController
         // AG todo
         $httpRef = isset($_SERVER['HTTP_REFERER']) ? urldecode($_SERVER['HTTP_REFERER']) : '';
         $parseRef = parse_url($httpRef);
-        parse_str((isset($parseRef['query']) ? $parseRef['query'] : null), $queryString);
+        parse_str((isset($parseRef['query']) ? $parseRef['query'].(isset($parseRef['fragment']) ? '#'.$parseRef['fragment'] : '') : null), $queryString);
         $ref = isset($queryString['ref']) ? $queryString['ref'] : '';
         // \AG todo
 
@@ -99,9 +97,6 @@ class AuthController extends BaseController
     }
     public function logout(Request $request)
     {
-
-        // return 'ok';
-        // AG
         $ref = isset($_SERVER['HTTP_REFERER']) ? urlencode($_SERVER['HTTP_REFERER']) : '';
         return response()->json(['ref'=>$ref]);
     }

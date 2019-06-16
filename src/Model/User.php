@@ -4,12 +4,12 @@ namespace Niyam\ACL\Model;
 
 use Illuminate\Auth\Authenticatable;
 use Laravel\Lumen\Auth\Authorizable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Spatie\Permission\Traits\HasRoles;
+use Niyam\Infrastructure\BaseModel;
 
-class User extends Model implements AuthenticatableContract, AuthorizableContract
+class User extends BaseModel implements AuthenticatableContract, AuthorizableContract
 {
     use Authenticatable, Authorizable, HasRoles;
     protected $guard_name = 'api';
@@ -31,5 +31,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->roles()->where('type', 1);
     }
+
+    public function positions()
+    {
+        return $this->roles()->where('type', 1);
+    }
+
 
 }

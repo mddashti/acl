@@ -4,10 +4,10 @@ namespace Niyam\ACL\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Niyam\Infrastructure\BaseController;
-use Niyam\ACL\Helper\ACLService;
+use Niyam\ACL\Service\ACLService;
 
-use Firebase\JWT\JWT;
-use Firebase\JWT\ExpiredException;
+use Illuminate\Support\Facades\URL;
+
 class HomeController extends BaseController
 {
     public function __construct(Request $request)
@@ -15,37 +15,21 @@ class HomeController extends BaseController
         parent::__construct($request);
     }
 
-    public function test()
+    public function index()
     {
-        $token = $this->request->cookie('access_token');
-     
-        echo "<pre>";
-        $p = (new ACLService($token))->permissions();
-        echo($p);
-        echo "<hr>";
-        $p = (new ACLService($token))->hasPermission(11);
-        echo($p);
+        return view('login');
     }
 
-    public function index(){
-        return view('home');
-    }
-
-    public function main()
+    public function home()
     {
-
-
-
-
-
-        $a = $this->request->cookie('access_token');
-        // dd($a);
-            $credentials = JWT::decode($a, env('JWT_SECRET'), ['HS256']);
-        dd(json_decode($credentials->sub));
-
-        return;
         $userName = $this->user->name;
-        return view('main')->with(['userName' => $userName]);
+        return view('home')->with(['userName' => $userName]);
     }
 
+    public function test(ACLService $service)
+    {
+        // return 89797;
+        return $service->giveUsersOfPosition(3);
+        // return $service->givePositionOfUser(1);
+    }
 }

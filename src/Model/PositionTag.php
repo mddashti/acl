@@ -2,13 +2,12 @@
 
 namespace Niyam\ACL\Model;
 
-use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
+use Niyam\Infrastructure\BaseModel;
 
-class PositionTag extends Model
+class PositionTag extends BaseModel
 {
     public $incrementing = false;
-    protected $fillable = ['role_id', 'parent_role_id', 'tag_id'];
     protected $table = 'role_tag';
 
     public function position()

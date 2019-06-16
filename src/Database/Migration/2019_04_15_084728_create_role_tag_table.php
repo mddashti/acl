@@ -18,6 +18,7 @@ class CreateRoleTagTable extends Migration
             $table->unsignedInteger('tag_id');
             $table->unsignedInteger('parent_role_id');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

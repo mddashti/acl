@@ -1,12 +1,12 @@
 <?php
 
 $router->group(
-	['prefix' => '' ],
+	['prefix' => '', 'middleware' => 'throttle:6000,1'],
 	function () use ($router) {
 
-		$router->get('test', 'HomeController@test');
 		$router->get('',  ['middleware' => 'jwt.auth', 'uses' => 'HomeController@index']);
-		$router->get('/main', ['middleware' => 'jwt.auth', 'uses' => 'HomeController@main']);
+		$router->get('/home', ['middleware' => 'jwt.auth', 'uses' => 'HomeController@home']);
+		$router->get('/test', ['middleware' => 'jwt.auth', 'uses' => 'HomeController@test']);
 
 		// Register Groups Routes
 		$router->group(
