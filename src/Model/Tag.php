@@ -2,7 +2,7 @@
 
 namespace Niyam\ACL\Model;
 
-use Niyam\Infrastructure\BaseModel;
+use Niyam\ACL\Infrastructure\BaseModel;
 
 class Tag extends BaseModel
 {

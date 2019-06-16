@@ -7,7 +7,7 @@ use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Spatie\Permission\Traits\HasRoles;
-use Niyam\Infrastructure\BaseModel;
+use Niyam\ACL\Infrastructure\BaseModel;
 
 class User extends BaseModel implements AuthenticatableContract, AuthorizableContract
 {
@@ -18,9 +18,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         'name', 'username', 'email','password'
     ];
 
-    protected $hidden = [
-        'password','pivot'
-    ];
+    protected $hidden = ['pivot'];
 
     public function getRoles()
     {

@@ -3,7 +3,7 @@
 namespace Niyam\ACL\Model;
 
 use Spatie\Permission\Models\Role;
-use Niyam\Infrastructure\BaseModel;
+use Niyam\ACL\Infrastructure\BaseModel;
 
 class PositionTag extends BaseModel
 {
