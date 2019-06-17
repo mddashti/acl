@@ -17,7 +17,7 @@ class User extends BaseModel implements AuthenticatableContract
         'name', 'username', 'avatar', 'signature', 'email','password'
     ];
 
-    protected $hidden = ['pivot','password'];
+    protected $hidden = ['pivot','password','updated_at','deleted_at'];
 
     public function getRoles()
     {

@@ -7,7 +7,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Spatie\Permission\Traits\HasRoles;
 use Niyam\ACL\Infrastructure\BaseModel;
 
-class User extends BaseModel implements AuthenticatableContract
+class SSOUser extends BaseModel implements AuthenticatableContract
 {
     use Authenticatable, HasRoles;
     protected $guard_name = 'api';
