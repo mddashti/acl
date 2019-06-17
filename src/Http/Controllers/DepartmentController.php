@@ -4,8 +4,8 @@ namespace Niyam\ACL\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Laravel\Lumen\Routing\Controller as BaseController;
 use Niyam\ACL\Model\Department;
+use Niyam\ACL\Infrastructure\BaseController;
 
 class DepartmentController extends BaseController
 {

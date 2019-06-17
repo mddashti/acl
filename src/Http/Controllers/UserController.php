@@ -5,7 +5,7 @@ namespace Niyam\ACL\Http\Controllers;
 use Illuminate\Http\Response;
 use Spatie\Permission\Models\Role;
 use Niyam\ACL\Model\User;
-use Niyam\Infrastructure\BaseController;
+use Niyam\ACL\Infrastructure\BaseController;
 
 class UserController extends BaseController
 {

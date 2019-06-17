@@ -3,8 +3,10 @@
 namespace Niyam\ACL\Http\Controllers;
 
 use Niyam\ACL\Model\Tag;
+use Niyam\ACL\Infrastructure\BaseController;
 
-class TagController extends Controller
+
+class TagController extends BaseController
 {
     public function getTags()
     {

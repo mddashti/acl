@@ -1,4 +1,4 @@
-<?php 
+<?php
 namespace Niyam\ACL;
 
 use Illuminate\Support\ServiceProvider;
@@ -12,7 +12,7 @@ class ACLServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        response()->macro('_json', function ($status, $message, $data=[]) {
+        response()->macro('_json', function ($status, $message, $data = []) {
             return response()->json([
                 'status'    => $status,
                 'message'   => $message,

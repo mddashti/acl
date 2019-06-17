@@ -3,19 +3,18 @@
 namespace Niyam\ACL\Model;
 
 use Illuminate\Auth\Authenticatable;
-use Laravel\Lumen\Auth\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Spatie\Permission\Traits\HasRoles;
 use Niyam\ACL\Infrastructure\BaseModel;
 
-class User extends BaseModel implements AuthenticatableContract, AuthorizableContract
+class User extends BaseModel implements AuthenticatableContract
 {
-    use Authenticatable, Authorizable, HasRoles;
+    use Authenticatable, HasRoles;
     protected $guard_name = 'api';
 
     protected $fillable = [
-        'name', 'username', 'email','password'
+        'name', 'username', 'avatar', 'signature', 'email','password'
     ];
 
     protected $hidden = ['pivot'];

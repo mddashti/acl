@@ -4,8 +4,8 @@ namespace Niyam\ACL\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Laravel\Lumen\Routing\Controller as BaseController;
 use Spatie\Permission\Models\Permission;
+use Niyam\ACL\Infrastructure\BaseController;
 
 class PermissionController extends BaseController
 {

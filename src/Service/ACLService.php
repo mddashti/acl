@@ -4,10 +4,10 @@ namespace Niyam\ACL\Service;
 use Niyam\ACL\Model\User;
 use Niyam\ACL\Model\Role;
 use Illuminate\Http\Response;
-use Laravel\Lumen\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Firebase\JWT\JWT;
 use Firebase\JWT\ExpiredException;
+use Illuminate\Http\Request;
 
 class ACLService
 {

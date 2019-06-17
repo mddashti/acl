@@ -2,7 +2,7 @@
 
 namespace Niyam\ACL\Http\Controllers;
 
-use Niyam\Infrastructure\BaseController;
+use Niyam\ACL\Infrastructure\BaseController;
 
 class FileController extends BaseController
 {

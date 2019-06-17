@@ -6,7 +6,7 @@ use Niyam\ACL\Model\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Laravel\Lumen\Routing\Controller as BaseController;
+use Niyam\ACL\Infrastructure\BaseController;
 
 class AuthController extends BaseController
 {
@@ -15,7 +15,7 @@ class AuthController extends BaseController
      *
      * @var \Illuminate\Http\Request
      */
-    private $request;
+    protected $request;
 
     /**
      * Create a new controller instance.
@@ -57,7 +57,7 @@ class AuthController extends BaseController
      */
     public function authenticate(User $user)
     {
-        $this->validate($this->request, [
+        $this->request->validate([
             'username'     => 'required',
             'password'  => 'required'
         ]);

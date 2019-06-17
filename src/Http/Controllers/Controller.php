@@ -2,7 +2,7 @@
 
 namespace Niyam\ACL\Http\Controllers;
 
-use Laravel\Lumen\Routing\Controller as BaseController;
+use Niyam\ACL\Infrastructure\BaseController;
 use Illuminate\Http\Request;
 
 

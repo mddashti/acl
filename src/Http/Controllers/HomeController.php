@@ -3,10 +3,8 @@
 namespace Niyam\ACL\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Niyam\Infrastructure\BaseController;
 use Niyam\ACL\Service\ACLService;
-
-use Illuminate\Support\Facades\URL;
+use Niyam\ACL\Infrastructure\BaseController;
 
 class HomeController extends BaseController
 {
@@ -28,8 +26,6 @@ class HomeController extends BaseController
 
     public function test(ACLService $service)
     {
-        // return 89797;
         return $service->giveUsersOfPosition(3);
-        // return $service->givePositionOfUser(1);
     }
 }

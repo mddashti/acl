@@ -6,7 +6,7 @@ use Illuminate\Http\Response;
 use Niyam\ACL\Model\User;
 use Niyam\ACL\Model\PositionTag;
 use Niyam\ACL\Helper\Graph;
-use Niyam\Infrastructure\BaseController;
+use Niyam\ACL\Infrastructure\BaseController;
 use Spatie\Permission\Models\Role;
 
 
