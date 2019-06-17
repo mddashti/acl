@@ -98,4 +98,9 @@ class ACLService
     {
         return Role::with('users')->where('type', 1)->find($position);
     }
+
+    public function findPositions($positionArray)
+    {
+        return Role::whereIn('id', $positionArray)->get();
+    }
 }

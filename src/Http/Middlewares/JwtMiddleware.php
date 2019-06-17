@@ -11,8 +11,12 @@ class JwtMiddleware
 {
     public function handle($request, Closure $next, $guard = null)
     {
-        $token = $request->ajax() ? $request->header('Authorization') : $request->cookie('access_token');
         $uri   = $request->path();
+
+        if (env('LOGIN_URL') == $uri || $uri == 'auth/login')
+            return $next($request);
+
+        $token = $request->ajax() ? $request->header('Authorization') : $request->cookie('access_token');
 
         if (!$token) {
             if ($request->ajax()) {
