@@ -4,7 +4,6 @@ namespace Niyam\ACL\Model;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Spatie\Permission\Traits\HasRoles;
 use Niyam\ACL\Infrastructure\BaseModel;
 
@@ -13,11 +12,9 @@ class User extends BaseModel implements AuthenticatableContract
     use Authenticatable, HasRoles;
     protected $guard_name = 'api';
 
-    protected $fillable = [
-        'name', 'username', 'avatar', 'signature', 'email','password'
-    ];
+    protected $guarded = [];
 
-    protected $hidden = ['pivot','password'];
+    protected $hidden = ['pivot'];
 
     public function getRoles()
     {
@@ -33,6 +30,4 @@ class User extends BaseModel implements AuthenticatableContract
     {
         return $this->roles()->where('type', 1);
     }
-
-
 }
