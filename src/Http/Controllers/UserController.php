@@ -57,7 +57,7 @@ class UserController extends BaseController
 
     public function positions($user)
     {
-        return User::findOrFail($user)->getPositions()->get(['id', 'name']);
+        return User::findOrFail($user)->getPositions()->get();
     }
 
     public function getUsers()
