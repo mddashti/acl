@@ -4,6 +4,7 @@ namespace Niyam\ACL\Model;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Niyam\ACL\Service\ACLService;
 use Spatie\Permission\Traits\HasRoles;
 use Niyam\ACL\Infrastructure\BaseModel;
 
@@ -15,19 +16,38 @@ class SSOUser extends BaseModel implements AuthenticatableContract
     protected $guarded = [];
 
     protected $hidden = ['pivot'];
+    protected  $aclService;
 
-    public function getRoles()
+    public function __construct(ACLService $aclService)
     {
-        return $this->roles()->where('type', 0);
+        $this->aclService = $aclService;
     }
 
-    public function getPositions()
+    //*******************************************************
+
+    public function hasPermission($permission)
     {
-        return $this->roles()->where('type', 1);
+        $res = $this->aclService->hasPermission($permission); //$this->permissions()->hasPermissionTo($permission);
+
+        return $res['isSuccess'] ? $res['data'] : $res['error'];
     }
 
-    public function positions()
+    public function hasRole($role)
     {
-        return $this->roles()->where('type', 1);
+        $res = $this->aclService->hasRole($role); //$this->hasRole($role);
+        return $res['isSuccess'] ? $res['data'] : $res['error'];
+    }
+
+    public function roles()
+    {
+        $res = $this->aclService->findUserRoles();
+
+        return $res['isSuccess'] ? collect($res['data']) : $res['error'];
+    }
+
+    public function rolePermissions()
+    {
+        $res = $this->aclService->findUserPermissions();
+        return $res['isSuccess'] ? collect($res['data']) : $res['error'];
     }
 }
