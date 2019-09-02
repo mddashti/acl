@@ -13,7 +13,7 @@ class CreateDepartmentsTable extends Migration
      */
     public function up()
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create("acl_departments", function (Blueprint $table) {
             $table->increments('id');
             $table->integer('parent_id');
             $table->string('name');
@@ -29,6 +29,6 @@ class CreateDepartmentsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists("acl_departments");
     }
 }

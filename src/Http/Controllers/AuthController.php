@@ -6,6 +6,7 @@ use Niyam\ACL\Model\User;
 use Firebase\JWT\JWT;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Niyam\ACL\Infrastructure\BaseController;
 
 class AuthController extends BaseController
@@ -99,5 +100,49 @@ class AuthController extends BaseController
     {
         $ref = isset($_SERVER['HTTP_REFERER']) ? urlencode($_SERVER['HTTP_REFERER']) : '';
         return response()->json(['ref'=>$ref]);
+    }
+
+    public function recoveryPassword()
+    {
+        return view('recovery-password');
+    }
+
+    public function changePassword()
+    {
+        echo "change PW";
+    }
+
+    // API
+    public function apiAuthenticate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'username'  => 'required',
+            'password'  => 'required'
+        ]);
+
+        if($validator->fails())
+            return response()->json(['error' => 'Validation fails.'], 400);
+
+        $username = $request->get('username');
+        $password = $request->get('password');
+
+        $user = User::where('email', $username)->orWhere('username', $username)->first();
+
+        if(!$user)
+            return response()->json(['error' => 'Email does not exist.'], 400);
+
+        if(Hash::check($password, $user->password))
+        {
+            $user->permissions = $user->getPermissionsViaRoles();
+            $user->roles = $user->getRoles()->get();
+
+            $setCookie = setcookie('access_token', $this->jwt($user), time()+env('TOKEN_LIFE_TIME'), '/');
+            if(!$setCookie)
+                return response()->json(['error' => 'Cookie set error.'], 400);
+
+            return response()->json(['message' => 'Login susscefull :)'], 200);
+        }
+
+        return response()->json(['error' => 'Password is wrong.'], 400);
     }
 }

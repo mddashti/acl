@@ -9,11 +9,23 @@ use Firebase\JWT\ExpiredException;
 
 class JwtMiddleware
 {
+
+    protected $except_route_list = [
+        'env("LOGIN_URL")',
+        'auth/login',
+        'auth/recovery',
+        'test',
+        'api/login',
+        // 'users',
+        // 'users/with-role',
+        // 'users/list',
+    ];
+
     public function handle($request, Closure $next, $guard = null)
     {
         $uri   = $request->path();
 
-        if (env('LOGIN_URL') == $uri || $uri == 'auth/login')
+        if (array_search($uri, $this->except_route_list))
             return $next($request);
 
         $token = $request->ajax() ? $request->header('Authorization') : $request->cookie('access_token');

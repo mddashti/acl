@@ -27,6 +27,7 @@ class CreatePermissionTables extends Migration
 
         Schema::create($tableNames['roles'], function (Blueprint $table) {
             $table->increments('id');
+            $table->unsignedInteger('organizational_post')->nullable();
             $table->string('name');
             $table->string('title');
             $table->string('guard_name');

@@ -13,7 +13,7 @@ class CreateRoleTagTable extends Migration
      */
     public function up()
     {
-        Schema::create('role_tag', function (Blueprint $table) {
+        Schema::create("acl_role_tag", function (Blueprint $table) {
             $table->unsignedInteger('role_id');
             $table->unsignedInteger('tag_id');
             $table->unsignedInteger('parent_role_id');
@@ -29,6 +29,6 @@ class CreateRoleTagTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('role_tag');
+        Schema::dropIfExists("acl_role_tag");
     }
 }

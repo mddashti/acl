@@ -11,25 +11,45 @@ class RouteRegistrar
     {
         $this->router = $router;
     }
+
     public function all()
     {
         $this->router->group(
             ['prefix' => '', 'middleware' => 'throttle:6000,1'],
-            function ($router){
-        
+            function ($router)
+            {
                 $router->get('',  ['uses' => 'HomeController@index']);
                 $router->get('/home', ['uses' => 'HomeController@home']);
+                // $router->get('{user}/verify/{password}', 'UserController@verifyPassword');
                 $router->get('/test', ['uses' => 'HomeController@test']);
         
+                // Api Groups Routes
+                $router->group(
+                    ['prefix' => 'api'],
+                    function () use ($router) {
+                        $router->post('login', 'AuthController@apiAuthenticate');
+                    }
+                );
+
                 // Register Groups Routes
                 $router->group(
                     ['prefix' => 'auth'],
                     function () use ($router) {
                         $router->post('login', 'AuthController@authenticate');
                         $router->post('logout', 'AuthController@logout');
+                        $router->get('recovery', ['uses' => 'AuthController@recoveryPassword']);
+                        $router->post('recovery', ['uses' => 'AuthController@changePassword']);
                     }
                 );
-        
+
+                $router->group(
+                    ['prefix' => 'panels'],
+                    function () use ($router) {
+                        $router->get('', 'UserController@index');
+                    }
+                );
+
+
                 $router->group(
                     ['prefix' => 'users'],
                     function () use ($router) {
@@ -41,6 +61,7 @@ class RouteRegistrar
                         $router->delete('{user}', 'UserController@deleteUser');
                         $router->patch('{user}', 'UserController@editUser');
                         $router->patch('{user}/with-role', 'UserController@editUserWithRole');
+                        $router->post('{user}/with-role', 'UserController@addRolesToUser');
                         $router->get('{user}/permissions', 'UserController@getUserPermissions');
                         $router->get('{user}/permissions/{permission}', 'UserController@hasPermission');
                         $router->post('{user}/roles', 'RoleController@assignRoleForUser');
@@ -56,13 +77,12 @@ class RouteRegistrar
                         $router->get('{user}/roles', 'UserController@roles');
                         $router->get('{user}/positions', 'UserController@positions');
                         $router->get('{user}/permissions', 'UserController@permissions');
-                        $router->get('{user}/verify/{password}', 'UserController@verifyPassword');
+                        $router->post('/list', 'UserController@createUserList');
                         // \AG
                     }
                 );
         
                 $router->group( //type is 0 as default
-                    // ['prefix' => 'roles', ],
                     ['prefix' => 'roles'],
                     function () use ($router) {
                         $router->get('', 'RoleController@getRoles');
@@ -70,7 +90,8 @@ class RouteRegistrar
                         $router->get('{role}', 'RoleController@getRole');
                         $router->delete('{role}', 'RoleController@deleteRole');
                         $router->patch('{role}', 'RoleController@editRole');
-                        $router->get('/{role}/users', 'UserController@getUsersByRole');
+                        // $router->get('/{role}/users', 'UserController@getUsersByRole');
+                        $router->get('/{role}/users', 'UserController@usersRole');
                         $router->post('/{role}/users', 'RoleController@assignRoleToUsers');
                         $router->delete('/{role}/users/{user}', 'RoleController@revokeUserRole');
                         $router->post('/{role}/permissions', 'RoleController@givePermissionTo');
@@ -118,6 +139,7 @@ class RouteRegistrar
                 $router->group(
                     ['prefix' => 'permissions'],
                     function () use ($router) {
+                        $router->get('', 'PermissionController@getPermissions');
                         $router->get('tree-kendo', 'PermissionController@getTreeKendoPermissions');
                         $router->get('tree', 'PermissionController@getTreePermissions');
                         $router->get('{permission}/isHaveNode', 'PermissionController@isHaveNode');

@@ -6,7 +6,7 @@ $router->group(
 
 		$router->get('',  ['middleware' => 'jwt.auth', 'uses' => 'HomeController@index']);
 		$router->get('/home', ['middleware' => 'jwt.auth', 'uses' => 'HomeController@home']);
-		$router->get('/test', ['middleware' => 'jwt.auth', 'uses' => 'HomeController@test']);
+		$router->get('/test1', ['middleware' => 'jwt.auth', 'uses' => 'HomeController@test']);
 
 		// Register Groups Routes
 		$router->group(
@@ -28,7 +28,7 @@ $router->group(
 				$router->delete('{user}', 'UserController@deleteUser');
 				$router->patch('{user}', 'UserController@editUser');
 				$router->patch('{user}/with-role', 'UserController@editUserWithRole');
-				$router->get('{user}/permissions', 'UserController@getUserPermissions');
+				// $router->get('{user}/permissions', 'UserController@getUserPermissions');
 				$router->get('{user}/permissions/{permission}', 'UserController@hasPermission');
 				$router->post('{user}/roles', 'RoleController@assignRoleForUser');
 				$router->get('{user}/roles/{role}', 'UserController@hasRole');

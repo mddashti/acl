@@ -16,7 +16,6 @@ class RateLimits extends \Illuminate\Routing\Middleware\ThrottleRequests
             $request->query('access_token')
             ]
         ));
-
-    return $request->fingerprint();
+        return $request->fingerprint();
     }
 }

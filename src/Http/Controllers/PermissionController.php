@@ -4,12 +4,12 @@ namespace Niyam\ACL\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Spatie\Permission\Models\Permission;
+use Niyam\ACL\Model\Permission;
 use Niyam\ACL\Infrastructure\BaseController;
 
 class PermissionController extends BaseController
 {
-    private $request;
+    protected $request;
 
     public function __construct(Request $request)
     {

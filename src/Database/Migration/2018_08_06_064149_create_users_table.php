@@ -13,16 +13,17 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create("acl_users", function (Blueprint $table) {
             $table->increments('id');
-            $table->string('firstname');
-            $table->string('lastname');
+            $table->string('firstname')->nullable();
+            $table->string('lastname')->nullable();
             $table->string('name');
-            $table->string('username');
+            $table->string('username')->unique();
+            $table->string('mobile');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('avatar');
-            $table->string('signature');
+            $table->string('avatar')->nullable();
+            $table->string('signature')->nullable();
             $table->tinyInteger('system')->default(0);
             $table->timestamps();
             $table->softDeletes();
@@ -36,6 +37,6 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists("acl_users");
     }
 }

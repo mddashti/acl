@@ -1,5 +1,4 @@
 <?php
-
 namespace Niyam\ACL;
 
 use Illuminate\Support\ServiceProvider;
@@ -30,7 +29,7 @@ class ACLServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if (env('SSO_SERVER', false))
+        if(env('SSO_SERVER', false))
             $this->registerMigrations();
     }
 

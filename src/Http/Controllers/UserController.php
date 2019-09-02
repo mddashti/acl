@@ -2,14 +2,23 @@
 
 namespace Niyam\ACL\Http\Controllers;
 
+use Niyam\ACL\Model\User;
 use Illuminate\Http\Response;
 use Spatie\Permission\Models\Role;
-use Niyam\ACL\Model\User;
+use Spatie\QueryBuilder\QueryBuilder;
 use Niyam\ACL\Infrastructure\BaseController;
+
+define('DS', DIRECTORY_SEPARATOR);
 
 class UserController extends BaseController
 {
-    private $guardName = 'Niyam\ACL\Model\User';
+    // private $guardName = 'Niyam\ACL\Model\User';
+
+    public function index()
+    {
+        $userName = $this->user->name;
+        return view('panels')->with(['userName' => $userName]);
+    }
 
     public function getAvatar($user)
     {
@@ -32,8 +41,7 @@ class UserController extends BaseController
     public function hasPermission($user, $permission)
     {
         $user = User::findOrFail($user);
-        $isHas = $user->hasPermissionTo($permission, $this->guardName);
-        return response()->_json(Response::HTTP_OK, 'OK', $isHas);
+        return $user->hasPermissionTo($permission) == true ? 1 : 0;
     }
 
     public function hasRole($user, $role)
@@ -46,13 +54,18 @@ class UserController extends BaseController
     public function permissions($user)
     {
         $user  = User::find($user);
-        $permissions = $user->getDirectPermissions();
-        return response()->_json(Response::HTTP_OK, 'OK', $permissions);
+        return $permissions =  $user->getAllPermissions();
+        //return response()->_json(Response::HTTP_OK, 'OK', $permissions);
     }
 
     public function roles($user)
     {
         return User::findOrFail($user)->getRoles()->get(['id', 'name']);
+    }
+
+    public function usersRole($role)
+    {
+        return Role::with('users')->findOrFail($role);
     }
 
     public function positions($user)
@@ -65,9 +78,37 @@ class UserController extends BaseController
         return User::all();
     }
 
+    public function addRolesToUser($userId)
+    {
+        $roleData = explode(',', $this->request->roles);
+
+        $user = User::findOrFail($userId);
+        $user->syncRoles($roleData);
+    }
+
+    public function createUserList()
+    {
+        $users = $this->request->all();
+        $results = [];
+        foreach ($users as $user) {
+            $randomPass = rand(111111, 999999);
+            $createUser = User::create([
+                'name' => $user['name'],
+                'username' => $user['username'],
+                'email' => $user['email'],
+                'password' => password_hash($randomPass, PASSWORD_BCRYPT)
+            ]);
+            $results[] = ['id' => $user['id'], 'acl_id' => $createUser->id, 'password' => $randomPass];
+        }
+        return $results;
+    }
+
     public function createUser()
     {
-        $this->validate($this->request, [
+        $this->request->validate([
+            'name'      => 'required',
+            'username'  => 'required',
+            'mobile'    => 'required',
             'email'     => 'required|unique:users',
             'password'  => 'required'
         ]);
@@ -79,20 +120,22 @@ class UserController extends BaseController
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $data['avatar'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'avatar' . DIRECTORY_SEPARATOR . $avatarUpload;
+            $data['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $data['signature'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'signature' . DIRECTORY_SEPARATOR . $signatureUpload;
+            $data['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
 
         return User::create([
             'name' => $data['name'],
+            'username' => $data['username'],
+            'mobile' => $data['mobile'],
             'email' => $data['email'],
             'avatar' => $data['avatar'],
             'signature' => $data['signature'],
@@ -111,16 +154,16 @@ class UserController extends BaseController
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $data['avatar'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'avatar' . DIRECTORY_SEPARATOR . $avatarUpload;
+            $data['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $data['signature'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'signature' . DIRECTORY_SEPARATOR . $signatureUpload;
+            $data['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
         return User::where('id', $userId)->update($data);
     }
@@ -139,25 +182,30 @@ class UserController extends BaseController
     {
         $userData = $this->request->except(['roles']);
         $roleData = explode(',', $this->request->roles);
+        $userData['avatar'] = '';
+        $userData['signature'] = '';
 
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $userData['avatar'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'avatar' . DIRECTORY_SEPARATOR . $avatarUpload;
+            $userData['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $userData['signature'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'signature' . DIRECTORY_SEPARATOR . $signatureUpload;
+            $userData['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
 
         $user =  User::create([
+            'firstname' => isset($userData['firstname']) ? $userData['firstname'] : '',
+            'lastname' => isset($userData['lastname']) ? $userData['lastname'] : '',
             'username' => $userData['username'],
             'name' => $userData['name'],
+            'mobile' => isset($userData['mobile']) ? $userData['mobile'] : '',
             'email' => $userData['email'],
             'avatar' => $userData['avatar'],
             'signature' => $userData['signature'],
@@ -181,16 +229,16 @@ class UserController extends BaseController
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $userData['avatar'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'avatar' . DIRECTORY_SEPARATOR . $avatarUpload;
+            $userData['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users' . DIRECTORY_SEPARATOR . 'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $userData['signature'] = DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'users' . DIRECTORY_SEPARATOR . 'signature' . DIRECTORY_SEPARATOR . $signatureUpload;
+            $userData['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
 
         $user = User::findOrFail($userId);
@@ -207,6 +255,7 @@ class UserController extends BaseController
     public function getUserPermissions($user)
     {
         $user = User::findOrFail($user);
+        return $user->getAllPermissions();
         $type = $this->request->has('type') ? $this->request->type : 0;
         if ($type == 'direct')
             return $user->getDirectPermissions();

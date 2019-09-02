@@ -8,7 +8,7 @@ use Niyam\ACL\Infrastructure\BaseModel;
 class PositionTag extends BaseModel
 {
     public $incrementing = false;
-    protected $table = 'role_tag';
+    protected $table = "acl_role_tag";
 
     public function position()
     {

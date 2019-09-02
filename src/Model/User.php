@@ -12,9 +12,11 @@ class User extends BaseModel implements AuthenticatableContract
 {
     use Authenticatable, HasRoles;
     protected $guard_name = 'api';
+    protected $table = "acl_users";
+
 
     protected $fillable = [
-        'name', 'username', 'avatar', 'signature', 'email','password'
+        'name', 'mobile', 'username', 'avatar', 'signature', 'email','password'
     ];
 
     protected $hidden = ['pivot','password','updated_at','deleted_at'];
