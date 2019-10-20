@@ -31,25 +31,25 @@ class SSOUser extends BaseModel implements AuthenticatableContract
     {
         $res = $this->aclService->hasPermission($permission);//$this->permissions()->hasPermissionTo($permission);
 
-        return $res['isSuccess']?$res['data']:$res['error'];
+        return $res['isSuccess'];
     }
 
     public function hasRole($role)
     {
         $res = $this->aclService->hasRole($role);//$this->hasRole($role);
-        return $res['isSuccess']?$res['data']:$res['error'];
+        return $res['isSuccess'];
     }
 
     public function roles()
     {
         $res = $this->aclService->findUserRoles();
 
-        return $res['isSuccess']?collect($res['data']):$res['error'];
+        return $res['isSuccess']?collect($res['data']):[];
     }
 
     public function rolePermissions()
     {
         $res = $this->aclService->findUserPermissions();
-        return $res['isSuccess']?collect($res['data']):$res['error'];
+        return $res['isSuccess']?collect($res['data']):[];
     }
 }

@@ -31,7 +31,7 @@ class HomeController extends BaseController
     public function test(ACLService $service)
     {
         
-        return ['pId' => $service->hasPermission(3), 'pName' => $service->hasPermission("rtytry")];
+        //return ['pId' => $service->hasPermission(1), 'pName' => $service->hasPermission("p")];
         return ['p' => $service->findUserPermissions(), 'u' => $service->findCurrentUser()];
         // return ACLService::getRoleByLevel(3, 1, 'parent');
         // return ACLService::getUserOfPositions(4);

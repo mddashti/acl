@@ -27,9 +27,9 @@ class ACLService
         $this->token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : '';
         if ($this->token) {
             $credentials = $this->token();
-            $this->user = json_decode($credentials->sub);
-            $this->permissions = get_object_vars($this->user->permissions1);
-            $this->roles = get_object_vars($this->user->roles1);
+            $this->user = json_decode($credentials->sub,true);
+            $this->permissions = $this->user["permissions1"];
+            $this->roles = $this->user["roles1"];
         }
     }
 
@@ -76,7 +76,7 @@ class ACLService
 
     public function hasRole($role)
     {
-        return ['isSuccess' => $this->arrayHas($role, $this->rles), 'data' => 0];
+        return ['isSuccess' => $this->arrayHas($role, $this->roles), 'data' => 0];
     }
 
     public function checkPassword($userId, $password)
