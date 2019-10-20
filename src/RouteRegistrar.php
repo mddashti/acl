@@ -35,7 +35,7 @@ class RouteRegistrar
                 $router->group(
                     ['prefix' => 'auth'],
                     function () use ($router) {
-                        $router->post('login', 'AuthController@authenticate');
+                        $router->any('login', 'AuthController@authenticate');
                         $router->post('logout', 'AuthController@logout');
                         $router->get('recovery', ['uses' => 'AuthController@recoveryPassword']);
                         $router->post('recovery', ['uses' => 'AuthController@changePassword']);

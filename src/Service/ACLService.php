@@ -1,23 +1,36 @@
 <?php
+
 namespace Niyam\ACL\Service;
 
+
+use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 use Niyam\ACL\Model\User;
 use Niyam\ACL\Model\Role;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
+use Niyam\ACL\Model\PositionTag;
+use Niyam\ACL\Helper\Graph;
 use Firebase\JWT\JWT;
 use Firebase\JWT\ExpiredException;
-use Illuminate\Http\Request;
 
 class ACLService
 {
     protected $token;
 
+    private $permissions;
+
+    private $roles;
+
+    private $user;
+
     public function __construct(Request $request)
     {
-        //$this->token = $request->cookie('access_token');
-        $this->token = $_COOKIE['access_token'];
-        // $this->token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJsdW1lbi1qd3QiLCJzdWIiOiJ7XCJpZFwiOjEsXCJuYW1lXCI6XCJEYXZpZFwiLFwidXNlcm5hbWVcIjpcImRhdmlkXCIsXCJlbWFpbFwiOlwibWRkYXNodGlAZ21haWwuY29tXCIsXCJzeXN0ZW1cIjowLFwiYXZhdGFyXCI6XCJcIixcInNpZ25hdHVyZVwiOlwiXCIsXCJjcmVhdGVkX2F0XCI6bnVsbCxcInVwZGF0ZWRfYXRcIjpudWxsLFwicm9sZXNcIjpbe1wiaWRcIjoxLFwibmFtZVwiOlwiQWFcIixcInRpdGxlXCI6XCJzc1wiLFwiZ3VhcmRfbmFtZVwiOlwiYXBpXCIsXCJwYXJlbnRfaWRcIjoyLFwidHlwZVwiOjAsXCJkZXBhcnRtZW50X2lkXCI6bnVsbCxcInVzZXJfaWRcIjpudWxsLFwiY3JlYXRlZF9hdFwiOm51bGwsXCJ1cGRhdGVkX2F0XCI6bnVsbCxcInBpdm90XCI6e1wibW9kZWxfaWRcIjoxLFwicm9sZV9pZFwiOjEsXCJtb2RlbF90eXBlXCI6XCJOaXlhbVxcXFxBQ0xcXFxcTW9kZWxcXFxcVXNlclwifX0se1wiaWRcIjoyLFwibmFtZVwiOlwiQmJCYjFcIixcInRpdGxlXCI6XCJlZVwiLFwiZ3VhcmRfbmFtZVwiOlwiYXBpXCIsXCJwYXJlbnRfaWRcIjowLFwidHlwZVwiOjAsXCJkZXBhcnRtZW50X2lkXCI6bnVsbCxcInVzZXJfaWRcIjozLFwiY3JlYXRlZF9hdFwiOm51bGwsXCJ1cGRhdGVkX2F0XCI6XCIyMDE5LTA1LTI2IDA3OjAyOjM3XCIsXCJwaXZvdFwiOntcIm1vZGVsX2lkXCI6MSxcInJvbGVfaWRcIjoyLFwibW9kZWxfdHlwZVwiOlwiTml5YW1cXFxcQUNMXFxcXE1vZGVsXFxcXFVzZXJcIn19XSxcInBlcm1pc3Npb25zXCI6W3tcImlkXCI6MSxcIm5hbWVcIjpcIlAtQVwiLFwidGl0bGVcIjpcInBlckFcIixcInBhcmVudF9pZFwiOjAsXCJndWFyZF9uYW1lXCI6XCJOaXlhbVxcXFxBQ0xcXFxcTW9kZWxcXFxcVXNlclwiLFwiY3JlYXRlZF9hdFwiOlwiMjAxOS0wNS0xOCAxOTozMDowMFwiLFwidXBkYXRlZF9hdFwiOlwiMjAxOS0wNS0xOCAxOTozMDowMFwiLFwicGl2b3RcIjp7XCJtb2RlbF9pZFwiOjEsXCJwZXJtaXNzaW9uX2lkXCI6MSxcIm1vZGVsX3R5cGVcIjpcIk5peWFtXFxcXEFDTFxcXFxNb2RlbFxcXFxVc2VyXCJ9fSx7XCJpZFwiOjMsXCJuYW1lXCI6XCJQLUNcIixcInRpdGxlXCI6XCJwZXJDXCIsXCJwYXJlbnRfaWRcIjowLFwiZ3VhcmRfbmFtZVwiOlwiTml5YW1cXFxcQUNMXFxcXE1vZGVsXFxcXFVzZXJcIixcImNyZWF0ZWRfYXRcIjpcIjIwMTktMDUtMTggMTk6MzA6MDBcIixcInVwZGF0ZWRfYXRcIjpcIjIwMTktMDUtMTggMTk6MzA6MDBcIixcInBpdm90XCI6e1wibW9kZWxfaWRcIjoxLFwicGVybWlzc2lvbl9pZFwiOjMsXCJtb2RlbF90eXBlXCI6XCJOaXlhbVxcXFxBQ0xcXFxcTW9kZWxcXFxcVXNlclwifX1dfSIsImlhdCI6MTU1OTM3MzQzNSwiZXhwIjoxNTU5NTg5NDM1fQ.VPf8hjAyAHPt_F3qYjbnDAmcp9-jDASP3wj2n4omDfc';
+        $this->token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : '';
+        if ($this->token) {
+            $credentials = $this->token();
+            $this->user = json_decode($credentials->sub);
+            $this->permissions = get_object_vars($this->user->permissions1);
+            $this->roles = get_object_vars($this->user->roles1);
+        }
     }
 
     public function token()
@@ -36,42 +49,34 @@ class ACLService
         return $credentials;
     }
 
+    public function findCurrentUser()
+    {
+        return $this->user;
+    }
+
     public function findUserPermissions()
     {
-        $credentials = $this->token();
-        $permissions = json_decode($credentials->sub)->permissions;
-
-        return ['isSuccess'=>true,'data'=>$permissions];
+        return ['isSuccess' => true, 'data' => $this->permissions];
     }
 
     public function hasPermission($permission)
     {
-        $credentials = $this->token();
-        $permissions = json_decode($credentials->sub)->permissions;
-        foreach ($permissions as $permiss) {
-            if ($permission == $permiss->id || $permission == $permiss->name)
-                return ['isSuccess'=>true,'data'=>1];
-        }
-        return ['isSuccess'=>true,'data'=>0];
+        return ['isSuccess' => $this->arrayHas($permission, $this->permissions), 'data' => 0];
+    }
+
+    private function arrayHas($key, $array)
+    {
+        return array_key_exists($key, $array) || in_array($key, $array);
     }
 
     public function findUserRoles()
     {
-        $credentials = $this->token();
-        $roles = json_decode($credentials->sub)->roles;
-        return ['isSuccess'=>true,'data'=>$roles];
+        return ['isSuccess' => true, 'data' => $this->roles];
     }
 
     public function hasRole($role)
     {
-        $credentials = $this->token();
-        $roles = json_decode($credentials->sub)->roles;
-        foreach ($roles as $rol) {
-            if ($role == $rol->id || $role == $rol->name)
-                return ['isSuccess'=>true,'data'=>1];
-        }
-
-        return ['isSuccess'=>true,'data'=>0];
+        return ['isSuccess' => $this->arrayHas($role, $this->rles), 'data' => 0];
     }
 
     public function checkPassword($userId, $password)
@@ -85,8 +90,7 @@ class ACLService
 
     public function userInfo($userId)
     {
-        $user = User::where('id', $userId)->first();
-        return $user;
+        return User::where('id', $userId)->first();
     }
 
     public function givePositionOfUser($userId)
@@ -104,14 +108,114 @@ class ACLService
         return Role::whereIn('id', $positionArray)->get();
     }
 
-
-
     //****************************************************************ADDED
-
     public function giveRoleOfUser($user)
     {
-        return User::findOrFail($user)->getRoles()->get(['id', 'name','title']);
+        return User::findOrFail($user)->getRoles()->get(['id', 'name', 'title']);
     }
+
+    // RELATIONS
+    public static function getRoleByLevel($roleX, $level, $direction = 'parent')
+    {
+        return self::relations(compact('roleX', 'level', 'direction'));
+    }
+
+    public static function getUserOfPositions($position_id)
+    {
+        return User::whereHas('positions', function ($query) use ($position_id) {
+            $query->where('id', $position_id);
+        })->get();
+    }
+
+    public static function getPositionOfUsers($user_id)
+    {
+        return User::with('positions')->where('id', $user_id)->get();
+    }
+
+    public static function getPositionByTag($role_id, $tag_id)
+    {
+        return PositionTag::where('role_id', $role_id)->where('tag_id', $tag_id)->get();
+    }
+    // public function getSubOfRole(){}
+
+    public static function getUserByXLD($roleX = null, $roleY = null, $level = null, $tag = null, $direction = null)
+    {
+        return self::relations(compact('roleX', 'roleY', 'level', 'tag', 'direction'));
+    }
+
+    public static function relations($data)
+    {
+        // $roleX, $roleY, $level, $tag, $direction
+        $roleX = isset($data['roleX']) ? $data['roleX'] : null;
+        $roleY = isset($data['roleY']) ? $data['roleY'] : null;
+        $level = isset($data['level']) ? $data['level'] : null;
+        $tag = isset($data['tag']) ? $data['tag'] : null;
+        $direction = isset($data['direction']) ? $data['direction'] : null;
+
+        if (!$roleX)
+            return response()->json(['error' => 'origin not found!'], Response::HTTP_NOT_FOUND);
+
+        $_allRoles = Role::all(['id', 'parent_id']);
+        $allRoles = [];
+        foreach ($_allRoles as $ar) {
+            if ($direction == 'child') // check direction
+                $allRoles[$ar['parent_id']] = $ar['id'];
+            else // if type == parent
+                $allRoles[$ar['id']] = $ar['parent_id'];
+        }
+
+        if ($level) {
+            $relation = self::getRolesByLevel($roleX, $level, $allRoles);
+        } else if ($roleY || $tag) {
+            $createNodes = self::createNodes($allRoles);
+            $graph = new Graph($createNodes);
+
+            if ($tag) {
+                $parent_id = PositionTag::where(['role_id' => $roleX, 'tag_id' => $tag])->get('parent_role_id');
+                if (!count($parent_id))
+                    return response()->json(['error' => 'tag destination not found!'], Response::HTTP_NOT_FOUND);
+
+                $relation = $graph->breadthFirstSearch($roleX, $parent_id[0]['parent_role_id']);
+            } else {
+                $relation = $graph->breadthFirstSearch($roleX, $roleY);
+            }
+        } else {
+            return response()->json(['error' => 'destination not found!'], Response::HTTP_NOT_FOUND);
+        }
+
+
+        $users = User::role($relation)->get();
+
+        return response()->json(['users' => $users]);
+    }
+
+    public static function getRolesByLevel($start, $level, array $data)
+    {
+        $result = [(int) $start];
+        for ($i = 0; $i < $level; $i++) {
+
+            if (!isset($data[$start]) || $data[$start] == 0)
+                break;
+
+            $start = $data[$start];
+            $result[] = $start;
+        }
+
+        return $result;
+    }
+
+    public static function createNodes(array $data)
+    {
+        $result = [];
+        foreach ($data as $id => $parent_id) {
+            if ($id != 0 && $parent_id != 0) {
+                $result[$id][] = $parent_id;
+                $result[$parent_id][] = $id;
+            }
+        }
+        return $result;
+    }
+    // \RELATIONS
 
 
 }

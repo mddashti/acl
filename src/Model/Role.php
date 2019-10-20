@@ -7,8 +7,9 @@ use Spatie\Permission\Models\Role as RoleModel;
 class Role extends RoleModel
 {
     protected $table = "acl_roles";
+    protected $hidden = ['pivot'];
 
-    protected $connection = 'acl';
+    // protected $connection = 'acl';
     protected $guarded = ['id'];
 
     public function department()

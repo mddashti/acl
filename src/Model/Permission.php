@@ -8,7 +8,7 @@ class Permission extends PermissionModel
 {
     protected $table = "acl_permissions";
 
-    protected $connection = 'acl';
+    // protected $connection = 'acl';
     protected $guarded = ['id'];
 
     // public function department()

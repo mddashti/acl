@@ -16,14 +16,14 @@ class JwtMiddleware
         'auth/recovery',
         'test',
         'api/login',
-        // 'users',
+        'users', // need 4 create user
         // 'users/with-role',
         // 'users/list',
     ];
 
     public function handle($request, Closure $next, $guard = null)
     {
-        $uri   = $request->path();
+        $uri = $request->path();
 
         if (array_search($uri, $this->except_route_list))
             return $next($request);

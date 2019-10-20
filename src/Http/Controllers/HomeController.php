@@ -30,6 +30,25 @@ class HomeController extends BaseController
 
     public function test(ACLService $service)
     {
+        
+        return ['pId' => $service->hasPermission(3), 'pName' => $service->hasPermission("rtytry")];
+        return ['p' => $service->findUserPermissions(), 'u' => $service->findCurrentUser()];
+        // return ACLService::getRoleByLevel(3, 1, 'parent');
+        // return ACLService::getUserOfPositions(4);
+        // return ACLService::getPositionOfUsers(3);
+        // return ACLService::getPositionByTag(4, 2); // also work for getSubOfRole()
+        // return ACLService::getUserByXLD(2, 1); // $roleX, $roleY, $level, $tag, $direction
+        return;
+        echo '<form action="/users" method="post" enctype="multipart/form-data">';
+        echo '<input type="text" name="name" value="name">';
+        echo '<input type="text" name="username" value="username">';
+        echo '<input type="text" name="mobile" value="mobile">';
+        echo '<input type="text" name="email" value="email">';
+        echo '<input type="text" name="password" value="password">';
+        echo '<input type="file" name="avatar">';
+        echo '<input type="file" name="signature">';
+        echo '<input type="submit">';
+        echo '</form>';
 
         return;
         $a = Auth::user()->hasRole();

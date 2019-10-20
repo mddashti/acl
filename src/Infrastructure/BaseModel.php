@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class BaseModel extends Model
 {
     use SoftDeletes;
-    protected $connection = 'acl';
+    // protected $connection = 'acl';
     protected $guarded = ['id'];
     protected $casts = [
         'options' => 'array',

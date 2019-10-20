@@ -3,9 +3,10 @@
 namespace Niyam\ACL\Http\Controllers;
 
 use Illuminate\Http\Response;
+use Niyam\ACL\Model\Department;
 use Niyam\ACL\Model\User;
 use Niyam\ACL\Model\PositionTag;
-use Niyam\ACL\Helper\Graph;
+use Niyam\ACL\Service\ACLService;
 use Niyam\ACL\Infrastructure\BaseController;
 use Spatie\Permission\Models\Role;
 
@@ -20,76 +21,12 @@ class RoleController extends BaseController
         $roleY = $this->request->get('y');
         // level
         $level = $this->request->get('level');
-        // tag
+        // tag get from role_tag table
         $tag = $this->request->get('tag');
         // direction [up, down]
         $direction = $this->request->get('direction', 'parent'); // (parent || child)
 
-
-        if (!$roleX)
-            return response()->_json(Response::HTTP_NOT_FOUND, 'origin not found!');
-
-
-        $_allRoles = Role::all(['id', 'parent_id']);
-        $allRoles = [];
-        foreach ($_allRoles as $ar) {
-            if ($direction == 'child') // check direction
-                $allRoles[$ar['parent_id']] = $ar['id'];
-            else // if type == parent
-                $allRoles[$ar['id']] = $ar['parent_id'];
-        }
-
-        if ($level) {
-            $relation = $this->getRolesByLevel($roleX, $level, $allRoles);
-        } else if ($roleY || $tag) {
-            $createNodes = $this->createNodes($allRoles);
-            $graph = new Graph($createNodes);
-
-            if ($tag) {
-                $parent_id = PositionTag::where(['role_id' => $roleX, 'tag_id' => $tag])->get('parent_role_id');
-                if (!count($parent_id))
-                    return response()->_json(Response::HTTP_NOT_FOUND, 'tag destination not found!');
-
-                $relation = $graph->breadthFirstSearch($roleX, $parent_id[0]['parent_role_id']);
-            } else {
-                $relation = $graph->breadthFirstSearch($roleX, $roleY);
-            }
-        } else {
-            return response()->_json(Response::HTTP_NOT_FOUND, 'destination not found!');
-        }
-
-
-        $users = User::role($relation)->get();
-
-        return response()->_json(Response::HTTP_OK, 'OK', ['users' => $users]);
-    }
-
-    public static function getRolesByLevel($start, $level, array $data)
-    {
-        $result = [(int)$start];
-        for ($i = 0; $i < $level; $i++) {
-
-            if (!isset($data[$start]) || $data[$start] == 0)
-                break;
-
-            $start = $data[$start];
-            $result[] = $start;
-        }
-
-        return $result;
-    }
-
-    public static function createNodes(array $data)
-    {
-        $result = [];
-        foreach ($data as $id => $parent_id) {
-            if ($id != 0 && $parent_id != 0) {
-                $result[$id][] = $parent_id;
-                $result[$parent_id][] = $id;
-            }
-        }
-
-        return $result;
+        return ACLService::getUserByXLD($roleX, $roleY, $level, $tag, $direction);
     }
 
     //// OLD ////////////////////////////////////////////////////////////////////
@@ -156,12 +93,12 @@ class RoleController extends BaseController
             $query = Role::where(['id' => $gId])->get();
         else
             $query = Role::where(['parent_id' => $parentId, 'type' => 1])->get();
-
         if (count($query) > 0)
             foreach ($query as $row) {
+                $departmentName = Department::where('id',$row->department_id)->first()->name;
                 if ($parentId == 0) {
                     $arr['id'] = $row->id;
-                    $arr['text'] = $row->title;
+                    $arr['text'] = $row->title.'-'.$departmentName;
                     $arr['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,
@@ -180,7 +117,7 @@ class RoleController extends BaseController
                     $i = count($arrChild);
                     // زیر گروههای درخت
                     $arrChild[$i]['id'] = $row->id;
-                    $arrChild[$i]['text'] = $row->title;
+                    $arrChild[$i]['text'] = $row->title.'-'.$departmentName;
                     $arrChild[$i]['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,
@@ -202,12 +139,12 @@ class RoleController extends BaseController
             $query = Role::where(['id' => $gId])->get();
         else
             $query = Role::where(['parent_id' => $parentId, 'type' => 1])->get();
-
         if (count($query) > 0)
             foreach ($query as $row) {
+                $departmentName = Department::where('id',$row->department_id)->first()->name;
                 if ($parentId == 0) {
                     $arr['value'] = $row->id;
-                    $arr['text'] = $row->title;
+                    $arr['text'] = $row->title.'-'.$departmentName;
                     $arr['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,
@@ -226,7 +163,7 @@ class RoleController extends BaseController
                     $i = count($arrChild);
                     // زیر گروههای درخت
                     $arrChild[$i]['value'] = $row->id;
-                    $arrChild[$i]['text'] = $row->title;
+                    $arrChild[$i]['text'] = $row->title.'-'.$departmentName;
                     $arrChild[$i]['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,

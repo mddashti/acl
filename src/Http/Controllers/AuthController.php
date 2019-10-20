@@ -80,14 +80,16 @@ class AuthController extends BaseController
             ], 400);
         }
 
-        $user->permissions = $user->getPermissionsViaRoles();
-        $user->roles = $user->getRoles()->get();
+        $user->permissions1 = $user->getAllPermissions()->pluck('name','id');
+        $user->roles1 = $user->getRoles()->pluck('name','id');
 
+        //dd($user->toArray());
         // Verify the password and generate the token
         if (Hash::check($this->request->input('password'), $user->password)) {
             return response()->json([
                 'token' => $this->jwt($user),
                 'ref'   => $ref, // AG
+                'user' => json_encode($user)
             ], 200);
         }
 
