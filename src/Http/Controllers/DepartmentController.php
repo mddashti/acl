@@ -5,6 +5,7 @@ namespace Niyam\ACL\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Niyam\ACL\Model\Department;
+use Spatie\Permission\Models\Role;
 use Niyam\ACL\Infrastructure\BaseController;
 
 class DepartmentController extends BaseController
@@ -20,6 +21,11 @@ class DepartmentController extends BaseController
     public function getDepartments()
     {
         return Department::all();
+    }
+
+    public function getPositions($department_id)
+    {
+        return Role::where('department_id', $department_id)->where('type', 1)->get();
     }
 
     public function getTreeElement(int $gId, int $parentId, array &$arr, array &$arrChild, $rolPer)

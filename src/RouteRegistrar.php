@@ -1,4 +1,5 @@
 <?php
+
 namespace Niyam\ACL;
 
 use Illuminate\Contracts\Routing\Registrar as Router;
@@ -15,40 +16,50 @@ class RouteRegistrar
     public function all()
     {
         $this->router->group(
-            ['prefix' => '', 'middleware' => 'throttle:6000,1'],
-            function ($router)
-            {
-                $router->get('',  ['uses' => 'HomeController@index']);
-                $router->get('/home', ['uses' => 'HomeController@home']);
+            ['prefix' => '', 'middleware' => ['web', 'throttle:600,1']],
+            function ($router) {
+                $router->get('', 'HomeController@index');
+                $router->get('/vendor-expert', 'HomeController@vendorExpert');
+                $router->get('/home', 'HomeController@home');
+                $router->get('/documentation', 'HomeController@documentation');
+                $router->get('/documentation/{id}', 'HomeController@documentationShow');
                 // $router->get('{user}/verify/{password}', 'UserController@verifyPassword');
-                $router->get('/test', ['uses' => 'HomeController@test']);
-        
+                $router->get('/test', 'HomeController@test');
+                $router->get('/panel', 'UserController@panel');
+                $router->get('/panels', 'UserController@index');
+                $router->get('/password', 'HomeController@password');
+                $router->post('/password', 'HomeController@passwordChange');
+
+                $router->get('position-tag', 'PositionTagController@index');
+
+
+                // $router->group(
+                //     ['prefix' => 'panels'],
+                //     function () use ($router) {
+                //         $router->get('', 'UserController@index');
+                //     }
+                // );
+
                 // Api Groups Routes
                 $router->group(
                     ['prefix' => 'api'],
                     function () use ($router) {
+                        $router->get('/documentation', 'DocumentationController@index');
                         $router->post('login', 'AuthController@apiAuthenticate');
                     }
                 );
 
                 // Register Groups Routes
+                // Route::group(['middleware' => ['web']], function () {
                 $router->group(
                     ['prefix' => 'auth'],
                     function () use ($router) {
                         $router->any('login', 'AuthController@authenticate');
-                        $router->post('logout', 'AuthController@logout');
+                        $router->get('logout', 'AuthController@logout');
                         $router->get('recovery', ['uses' => 'AuthController@recoveryPassword']);
                         $router->post('recovery', ['uses' => 'AuthController@changePassword']);
                     }
                 );
-
-                $router->group(
-                    ['prefix' => 'panels'],
-                    function () use ($router) {
-                        $router->get('', 'UserController@index');
-                    }
-                );
-
 
                 $router->group(
                     ['prefix' => 'users'],
@@ -81,7 +92,7 @@ class RouteRegistrar
                         // \AG
                     }
                 );
-        
+
                 $router->group( //type is 0 as default
                     ['prefix' => 'roles'],
                     function () use ($router) {
@@ -104,7 +115,7 @@ class RouteRegistrar
                         // \AG
                     }
                 );
-        
+
                 $router->group(
                     ['prefix' => 'tags'],
                     function () use ($router) {
@@ -114,9 +125,9 @@ class RouteRegistrar
                         $router->patch('{tag}', 'TagController@editTag');
                     }
                 );
-        
+
                 $router->group( //type is 1
-                    ['prefix' => 'positions' ],
+                    ['prefix' => 'positions'],
                     function () use ($router) {
                         $router->get('', 'RoleController@getRoles');
                         $router->get('tree', 'RoleController@getTreeRoles');
@@ -135,7 +146,7 @@ class RouteRegistrar
                         $router->delete('owners/{owner}/tags/{tag}', 'RoleController@deleteRoleTag');
                     }
                 );
-        
+
                 $router->group(
                     ['prefix' => 'permissions'],
                     function () use ($router) {
@@ -147,15 +158,34 @@ class RouteRegistrar
                         $router->delete('{permission}', 'PermissionController@deletePermission');
                     }
                 );
-        
+
                 $router->group(
                     ['prefix' => 'departments'],
                     function () use ($router) {
+                        $router->get('{department}/positions', 'DepartmentController@getPositions');
                         $router->get('', 'DepartmentController@getDepartments');
                         $router->get('tree', 'DepartmentController@getTreeDepartments');
                         $router->get('{department}/isHaveNode', 'DepartmentController@isHaveNode');
                         $router->post('', 'DepartmentController@storeDepartment');
                         $router->delete('{department}', 'DepartmentController@deleteDepartment');
+                    }
+                );
+
+                $router->group(
+                    ['prefix' => 'department-tag'],
+                    function () use ($router) {
+                        $router->get('', 'DepartmentTagController@index');
+                        $router->get('/{department_id}', 'DepartmentTagController@show');
+                        $router->post('', 'DepartmentTagController@store');
+                        // $router->delete('{department}', 'DepartmentController@deleteDepartment');
+                    }
+                );
+
+                $router->group(
+                    ['prefix' => 'notifications'],
+                    function () use ($router) {
+                        $router->get('sms', 'NotificationController@sms');
+                        $router->get('emails', 'NotificationController@emails');
                     }
                 );
             }

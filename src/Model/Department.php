@@ -6,7 +6,6 @@ use Niyam\ACL\Infrastructure\BaseModel;
 
 class Department extends BaseModel
 {
-    protected $table = "acl_departments";
     public function positions()
     {
         return $this->hasMany(Role::class);

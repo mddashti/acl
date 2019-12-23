@@ -17,8 +17,7 @@ class SSOUser extends BaseModel implements AuthenticatableContract
     protected $guarded = [];
 
     protected $hidden = ['pivot'];
-    protected  $aclService;
-    protected $table = "acl_users";
+    protected $aclService;
 
     public function __construct(ACLService $aclService)
     {
@@ -29,27 +28,41 @@ class SSOUser extends BaseModel implements AuthenticatableContract
 
     public function hasPermission($permission)
     {
-        $res = $this->aclService->hasPermission($permission);//$this->permissions()->hasPermissionTo($permission);
+        $res = $this->aclService->hasPermission($permission); //$this->permissions()->hasPermissionTo($permission);
 
         return $res['isSuccess'];
     }
 
     public function hasRole($role)
     {
-        $res = $this->aclService->hasRole($role);//$this->hasRole($role);
+        $res = $this->aclService->hasRole($role); //$this->hasRole($role);
         return $res['isSuccess'];
     }
 
     public function roles()
     {
         $res = $this->aclService->findUserRoles();
+        // return $res['isSuccess']?collect($res['data']):[];
+        $fres = [];
+        foreach ($res['data'] as $id => $name) {
+            $fres[] = ['id' => $id, 'name' => $name];
+        }
+        return collect($fres);
+    }
 
-        return $res['isSuccess']?collect($res['data']):[];
+    public function permissions()
+    {
+        $res = $this->aclService->findUserPermissions();
+        $fres = [];
+        foreach ($res['data'] as $id => $name) {
+            $fres[] = ['id' => $id, 'name' => $name];
+        }
+        return collect($fres);
     }
 
     public function rolePermissions()
     {
         $res = $this->aclService->findUserPermissions();
-        return $res['isSuccess']?collect($res['data']):[];
+        return $res['isSuccess'] ? collect($res['data']) : [];
     }
 }

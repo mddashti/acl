@@ -11,16 +11,14 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends BaseModel implements AuthenticatableContract
 {
-    use Authenticatable, HasRoles,Notifiable;
+    use Authenticatable, HasRoles, Notifiable;
     protected $guard_name = 'api';
-    protected $table = "acl_users";
-
 
     protected $fillable = [
-        'name', 'mobile', 'username', 'avatar', 'signature', 'email','password'
+        'name', 'mobile', 'username', 'personnel_code', 'gender', 'avatar', 'signature', 'email', 'password', 'password_change'
     ];
 
-    protected $hidden = ['pivot','password','updated_at','deleted_at','roles','permissions'];
+    protected $hidden = ['pivot', 'password', 'updated_at', 'deleted_at', 'roles', 'permissions'];
 
     public function getRoles()
     {

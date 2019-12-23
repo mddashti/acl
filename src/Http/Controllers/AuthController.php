@@ -2,12 +2,14 @@
 
 namespace Niyam\ACL\Http\Controllers;
 
-use Niyam\ACL\Model\User;
 use Firebase\JWT\JWT;
+use Niyam\ACL\Model\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Niyam\ACL\Infrastructure\BaseController;
+
 
 class AuthController extends BaseController
 {
@@ -59,8 +61,9 @@ class AuthController extends BaseController
     public function authenticate(User $user)
     {
         $this->request->validate([
-            'username'     => 'required',
-            'password'  => 'required'
+            'username'  => 'required',
+            'password'  => 'required',
+            'captcha'   => env('CAPTCHA_ENABLED',true) ? 'required|captcha' : 'required'
         ]);
 
         // AG todo
@@ -74,34 +77,34 @@ class AuthController extends BaseController
         $userName =  $this->request->input('username');
         $user = User::where('email', $userName)->orWhere('username', $userName)->first();
 
-        if (!$user) {
-            return response()->json([
-                'error' => 'Email does not exist.'
-            ], 400);
-        }
+        if (!$user)
+            return response()->json(['error' => 'Email does not exist.'], 400);
+
 
         $user->permissions1 = $user->getAllPermissions()->pluck('name','id');
         $user->roles1 = $user->getRoles()->pluck('name','id');
 
-        //dd($user->toArray());
         // Verify the password and generate the token
         if (Hash::check($this->request->input('password'), $user->password)) {
-            return response()->json([
-                'token' => $this->jwt($user),
-                'ref'   => $ref, // AG
-                'user' => json_encode($user)
-            ], 200);
+            return response()
+                    ->json([
+                        'token'=>$this->jwt($user),
+                        'ref' => $ref,
+                        'user' => json_encode($user)], 200);
+                    // ->cookie('access_token2', $this->jwt($user), env('TOKEN_LIFE_TIME');
         }
 
-        // Bad Request response        
+        // Bad Request response
         return response()->json([
             'error' => 'Email or password is wrong.'
         ], 400);
     }
     public function logout(Request $request)
     {
-        $ref = isset($_SERVER['HTTP_REFERER']) ? urlencode($_SERVER['HTTP_REFERER']) : '';
-        return response()->json(['ref'=>$ref]);
+        return view('logout');
+        // return redirect('/')->withCookie(\Cookie::forget('access_token'));
+        // $ref = isset($_SERVER['HTTP_REFERER']) ? urlencode($_SERVER['HTTP_REFERER']) : '/';
+        // return response()->json(['ref'=>$ref]);
     }
 
     public function recoveryPassword()

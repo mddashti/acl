@@ -7,12 +7,12 @@ use Niyam\ACL\Infrastructure\BaseModel;
 
 class PositionTag extends BaseModel
 {
+    public $table = 'position_tag';
     public $incrementing = false;
-    protected $table = "acl_role_tag";
 
     public function position()
     {
-        return $this->belongsTo(Role::class, 'role_id');
+        return $this->belongsTo(Role::class, 'position_id');
     }
 
     public function tag()
@@ -22,6 +22,6 @@ class PositionTag extends BaseModel
 
     public function owner()
     {
-        return $this->belongsTo(Role::class, 'parent_role_id');
+        return $this->belongsTo(Role::class, 'parent_position_id');
     }
 }

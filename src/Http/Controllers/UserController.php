@@ -4,6 +4,7 @@ namespace Niyam\ACL\Http\Controllers;
 
 use Niyam\ACL\Model\User;
 use Illuminate\Http\Response;
+use Niyam\ACL\Service\ACLService;
 use Spatie\Permission\Models\Role;
 use Spatie\QueryBuilder\QueryBuilder;
 use Niyam\ACL\Infrastructure\BaseController;
@@ -14,10 +15,20 @@ class UserController extends BaseController
 {
     // private $guardName = 'Niyam\ACL\Model\User';
 
-    public function index()
+    public function panel(ACLService $service)
     {
-        $userName = $this->user->name;
-        return view('panels')->with(['userName' => $userName]);
+        $user = $this->user;
+        $isAdmin = $service->hasRole('acl_admin')['isSuccess'];
+        if(!$isAdmin) abort(4*100+1+2);
+        return view('panel')->with(['user'=>$user, 'isAdmin'=>$isAdmin]);
+    }
+
+    public function index(ACLService $service)
+    {
+        $user = $this->user;
+        $isAdmin = $service->hasRole('acl_admin')['isSuccess'];
+        if(!$isAdmin) abort(4*100+1+2);
+        return view('panels')->with(['user'=>$user, 'isAdmin'=>$isAdmin]);
     }
 
     public function getAvatar($user)
@@ -75,7 +86,7 @@ class UserController extends BaseController
 
     public function getUsers()
     {
-        return User::all();
+        return User::orderBy('id')->get();
     }
 
     public function addRolesToUser($userId)

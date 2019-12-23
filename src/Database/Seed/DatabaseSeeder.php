@@ -10,6 +10,7 @@ class NiyamACLSeeder extends Seeder
 		$this->call([
 		  UsersTableSeeder::class,
 		  DepartmentsTableSeeder::class,
+		  DefaultsTableSeeder::class,
 		]);
 	}
 	// app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

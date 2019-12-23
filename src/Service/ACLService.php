@@ -2,7 +2,6 @@
 
 namespace Niyam\ACL\Service;
 
-
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use Niyam\ACL\Model\User;
@@ -27,7 +26,7 @@ class ACLService
         $this->token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : '';
         if ($this->token) {
             $credentials = $this->token();
-            $this->user = json_decode($credentials->sub,true);
+            $this->user = json_decode($credentials->sub, true);
             $this->permissions = $this->user["permissions1"];
             $this->roles = $this->user["roles1"];
         }
@@ -35,9 +34,6 @@ class ACLService
 
     public function token()
     {
-        if (!$this->token)
-            return response()->json(['message' => 'Token not found!'], Response::HTTP_NOT_FOUND);
-
         try {
             $credentials = JWT::decode($this->token, env('JWT_SECRET'), ['HS256']);
         } catch (ExpiredException $e) {
@@ -47,6 +43,32 @@ class ACLService
         }
 
         return $credentials;
+    }
+
+    public function createUser(array $userData)
+    {
+        if (!isset($userData['email']) || !isset($userData['username']) || !isset($userData['password']) || !isset($userData['mobile']))
+            return ['isSuccess' => false, 'error' => 'data passed missing!'];
+
+        $q = User::where('email', $userData["email"])
+            ->orWhere('mobile', $userData["mobile"])
+            ->orWhere('username', $userData["username"])
+            ->get();
+        if (count($q))
+            return ['isSuccess' => false, 'error' => 'user exist!'];
+
+        return User::create([
+            'firstname' => isset($userData["firstname"]) ? $userData["firstname"] : "",
+            'lastname' => isset($userData["lastname"]) ? $userData["lastname"] : "",
+            'name' => isset($userData["name"]) ? $userData["name"] : "",
+            'username' => $userData['username'],
+            'mobile' => $userData['mobile'],
+            'email' => $userData['email'],
+            'avatar' => '',
+            'signature' => '',
+            'password_change' => 0,
+            'password' => password_hash($userData['password'], PASSWORD_BCRYPT)
+        ]);
     }
 
     public function findCurrentUser()
@@ -95,7 +117,14 @@ class ACLService
 
     public function givePositionOfUser($userId)
     {
-        return User::with('positions')->find($userId);
+        $user = User::with('positions')->find($userId);
+        return count($user['positions']) ? $user['positions'][0]['id'] : 0;
+    }
+
+    public function givePositionsOfUser($userId)
+    {
+        $user = User::with('positions')->find($userId);
+        return count($user['positions']) ? $user['positions']->pluck('id') : [];
     }
 
     public function giveUsersOfPosition($position)
@@ -108,6 +137,69 @@ class ACLService
         return Role::whereIn('id', $positionArray)->get();
     }
 
+    // new
+    public function giveUsersByTag($departments, $tag, $successor) // by tag & dep
+    {
+    }
+
+    public function giveUserOfPosition($positionId, $successor = false)
+    {
+        if ($successor) { // پرنت جانشین رول هست
+            $position = Role::with('users')->where('type', 0)->find($positionId);
+            // $userId = count($position['users']) ? $position['users'][0]['id'] : [];
+            // $userId = count($position['users']) ? $position['users'] : [];
+            $getSuccessor = $this->getPositionByTag($positionId, 1);
+            // $successorId = count($getSuccessor) ? $getSuccessor[0]['parent_role_id'] : [];
+            // $successorId = count($getSuccessor) ? $getSuccessor : [];
+            return [$position, $getSuccessor];
+        } else {
+            $position = Role::with('users')->where('type', 0)->find($positionId);
+            return $position;
+            // return count($position['users']) ? [$position['users'][0]['id']] : [];
+            return count($position['users']) ? $position['users'] : [];
+        }
+    }
+
+    public function giveUsersOfPositions($positions, $successor = false)
+    {
+        $successor = 1;
+        $ret = [];
+        if (is_array($positions)) {
+            foreach ($positions as $position) {
+                $_get = self::giveUserOfPosition($position, $successor);
+                $_users = [];
+                $_tags = [];
+                foreach ($_get['users'] as $_g) {
+                    $_users[] = $_g['id'];
+                }
+                $ret['users'][] = $_users;
+            }
+        }
+
+        return $ret;
+
+
+
+        $positions = Role::with('users')->where('type', 0)->find($positions);
+        return $positions;
+        return count($position['users']) ? [$position['users']/*[0]*/['id']] : [];
+
+        // $data = Role::with('users')->find($positions);
+        // return $data;
+        /*
+        return [
+            [
+                users:[1,2,3],
+                tags:[4,0,6]
+            ],
+            [
+                users:[1,4,5],
+                tags:[1,0,8]
+            ],
+        ]
+        */
+    }
+
     //****************************************************************ADDED
     public function giveRoleOfUser($user)
     {
@@ -118,6 +210,14 @@ class ACLService
     public static function getRoleByLevel($roleX, $level, $direction = 'parent')
     {
         return self::relations(compact('roleX', 'level', 'direction'));
+    }
+
+    public static function getUsersOfRole($role)
+    {
+        $field = (gettype($role) == 'integer') ? 'id' : 'name';
+        return User::whereHas('getRoles', function ($query) use ($role, $field) {
+            $query->where($field, $role);
+        })->get();
     }
 
     public static function getUserOfPositions($position_id)
@@ -134,7 +234,7 @@ class ACLService
 
     public static function getPositionByTag($role_id, $tag_id)
     {
-        return PositionTag::where('role_id', $role_id)->where('tag_id', $tag_id)->get();
+        return PositionTag::where('position_id', $role_id)->where('tag_id', $tag_id)->get();
     }
     // public function getSubOfRole(){}
 

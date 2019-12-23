@@ -12,6 +12,7 @@ class ACL
 
         $defaultOptions = [
             'namespace' => '\Niyam\ACL\Http\Controllers',
+            'prefix' => ''
         ];
 
         $options = array_merge($defaultOptions, $options);

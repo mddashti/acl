@@ -2,13 +2,15 @@
 
 namespace Niyam\ACL\Http\Controllers;
 
+use Niyam\ACL\Model\User;
+use Niyam\ACL\Model\Tag;
 use Illuminate\Http\Response;
 use Niyam\ACL\Model\Department;
-use Niyam\ACL\Model\User;
 use Niyam\ACL\Model\PositionTag;
 use Niyam\ACL\Service\ACLService;
-use Niyam\ACL\Infrastructure\BaseController;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
+use Niyam\ACL\Infrastructure\BaseController;
 
 
 class RoleController extends BaseController
@@ -78,7 +80,10 @@ class RoleController extends BaseController
     public function getRoles()
     {
         $type = $this->request->is('positions') ? 1 : 0;
-        return Role::where('type', $type)->get();
+        $parent = $this->request->get('parent');
+        $getRoles = Role::where('type', $type);
+        $getRoles = $parent ? $getRoles->where('parent_id', $parent) : $getRoles;
+        return $getRoles->get();
     }
 
     public function getRole($role)
@@ -95,9 +100,11 @@ class RoleController extends BaseController
             $query = Role::where(['parent_id' => $parentId, 'type' => 1])->get();
         if (count($query) > 0)
             foreach ($query as $row) {
-                $departmentName = Department::where('id',$row->department_id)->first()->name;
+                $getDepartmentName = Department::where('id',$row->department_id)->first();
+                $departmentName = $getDepartmentName ? $getDepartmentName->name : '';
                 if ($parentId == 0) {
                     $arr['id'] = $row->id;
+                    $arr['rawText'] = $row->title;
                     $arr['text'] = $row->title.'-'.$departmentName;
                     $arr['data'] = [
                         'parentId' => $row->parent_id,
@@ -141,7 +148,8 @@ class RoleController extends BaseController
             $query = Role::where(['parent_id' => $parentId, 'type' => 1])->get();
         if (count($query) > 0)
             foreach ($query as $row) {
-                $departmentName = Department::where('id',$row->department_id)->first()->name;
+                $getDepartmentName = Department::where('id',$row->department_id)->first();
+                $departmentName = $getDepartmentName ? $getDepartmentName->name : '';
                 if ($parentId == 0) {
                     $arr['value'] = $row->id;
                     $arr['text'] = $row->title.'-'.$departmentName;
@@ -198,6 +206,7 @@ class RoleController extends BaseController
         $dataRet = $data = $arrChild = array();
 
         $query = Role::where(['parent_id' => 0, 'type' => 1])->get();
+        // $query = Role::where(['parent_id' => 0])->get();
         if (count($query) > 0)
             foreach ($query as $row) {
                 $this->getTreeKendoElement($row->id, 0, $data, $arrChild, []);
@@ -240,6 +249,41 @@ class RoleController extends BaseController
         $users = $this->request->users;
         $role = Role::findOrFail($role);
         $role->users()->sync($users);
+        return $this->HANDLE_VENDOR_USER($role, $users);
+    }
+
+    public function HANDLE_VENDOR_USER($role, $users)
+    {
+        if($role->name != 'expert_vendor') return;
+        $deActiveExistsExpertUsers = DB::connection('vendor')->table('vendor_users')
+                    ->where('type', 4)/*->whereIn('sso_id', $users)*/->update([
+                        'active' => 0
+                    ]);
+        
+        foreach($users as $userId){
+            $existUser = DB::connection('vendor')->table('vendor_users')
+                                ->where('type', 4)->where('sso_id', $userId)->update([
+                                    'active' => 1
+                                ]);
+            if($existUser){
+                // $existUser->update(['active' => 1]);
+            }else{
+                $user = User::where('id', $userId)->first();
+                if($user){
+                    DB::connection('vendor')->table('vendor_users')->insert([
+                        'username'      => $user->username,
+                        'sso_id'        => $user->id,
+                        'model_type'    => 'App\\',
+                        'title'         => $user->name,
+                        'email'         => $user->email,
+                        'mobile'        => $user->mobile,
+                        'password'      => bcrypt('123456'),
+                        'active'        => true,
+                        'type'          => 4
+                    ]);
+                }
+            }
+        }
     }
 
     public function revokeUserRole($user, $role)
@@ -285,7 +329,7 @@ class RoleController extends BaseController
 
     public function getPositionsByOwnerTag($owner, $tag)
     {
-        return PositionTag::where(['tag_id' => $tag, 'parent_role_id' => $owner])->get()->pluck('role_id');
+        return PositionTag::where(['tag_id' => $tag, 'parent_position_id' => $owner])->get()->pluck('position_id');
     }
 
     public function postPositionsByOwnerTag($owner, $tag)
@@ -294,13 +338,20 @@ class RoleController extends BaseController
         $positions = $this->request->positions;
 
         //check duplicate for insert
-        if (!$isEdit && PositionTag::where(['tag_id' => $tag, 'parent_role_id' => $owner])->count() > 0) {
+        if (!$isEdit && PositionTag::where(['tag_id' => $tag, 'parent_position_id' => $owner])->count() > 0) {
             return Response('اطلاعات وارد شده تکراری میباشد.', Response::HTTP_BAD_REQUEST);
         }
 
-        PositionTag::where(['tag_id' => $tag, 'parent_role_id' => $owner])->delete();
-        foreach ($positions as $position) {
-            PositionTag::create(['tag_id' => $tag, 'parent_role_id' => $owner, 'role_id' => $position]);
+        PositionTag::where(['tag_id' => $tag, 'parent_position_id' => $owner])->delete();
+
+        $getTagType = Tag::where('id', $tag)->first('type');
+
+        if($getTagType['type'] == 1){
+            foreach ($positions as $position) {
+                PositionTag::create(['tag_id' => $tag, 'parent_position_id' => $owner, 'position_id' => $position, 'type' => $getTagType['type']]);
+            }
+        }else/* if($getTagType['type'] == 0)*/{
+            PositionTag::create(['tag_id' => $tag, 'parent_position_id' => $owner, 'position_id' => null, 'type' => $getTagType['type']]);
         }
     }
 
@@ -323,6 +374,6 @@ class RoleController extends BaseController
 
     public function deleteRoleTag($owner, $tag)
     {
-        PositionTag::Where(['parent_role_id' => $owner, 'tag_id' => $tag])->delete();
+        PositionTag::Where(['parent_position_id' => $owner, 'tag_id' => $tag])->delete();
     }
 }

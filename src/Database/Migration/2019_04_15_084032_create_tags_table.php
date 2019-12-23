@@ -13,9 +13,10 @@ class CreateTagsTable extends Migration
      */
     public function up()
     {
-        Schema::create("acl_tags", function (Blueprint $table) {
+        Schema::create("tags", function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
+            $table->tinyInteger('type')->default(0)->comment('0->position and parent, 1->just for position, 2->pousha like!');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -28,6 +29,6 @@ class CreateTagsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists("acl_tags");
+        Schema::dropIfExists("tags");
     }
 }
