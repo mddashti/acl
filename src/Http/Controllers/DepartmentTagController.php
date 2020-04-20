@@ -25,15 +25,14 @@ class DepartmentTagController extends BaseController
         $tags = $request->tags;
         $departments = $request->departments;
 
-        foreach($departments as $department){
+        foreach ($departments as $department) {
             DepartmentTag::where('department_id', $department)->delete();
-            foreach($tags as $tag){
+            foreach ($tags as $tag) {
                 DepartmentTag::create([
                     'department_id' => $department,
                     'tag_id' => $tag
                 ]);
             }
         }
-
     }
 }

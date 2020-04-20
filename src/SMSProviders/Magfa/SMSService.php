@@ -1,5 +1,4 @@
 <?php
-
 namespace Niyam\ACL\SMSProviders\Magfa;
 
 use SoapClient;

@@ -21,7 +21,7 @@ class ACLService
 
     private $user;
 
-    public function __construct(Request $request)
+    public function __construct()
     {
         $this->token = isset($_COOKIE['access_token']) ? $_COOKIE['access_token'] : '';
         if ($this->token) {
@@ -74,6 +74,16 @@ class ACLService
     public function findCurrentUser()
     {
         return $this->user;
+    }
+
+    public function permissions()
+    {
+        return $this->permissions();
+    }
+
+    public function roles()
+    {
+        return $this->roles();
     }
 
     public function findUserPermissions()
@@ -218,6 +228,14 @@ class ACLService
         return User::whereHas('getRoles', function ($query) use ($role, $field) {
             $query->where($field, $role);
         })->get();
+    }
+
+    public static function getUsersOfRoles($roles, $columns = '*')
+    {
+        $field = (gettype($roles[0]) == 'integer') ? 'id' : 'name';
+        return User::whereHas('getRoles', function ($query) use ($roles, $field) {
+            $query->whereIn($field, $roles);
+        })->get($columns);
     }
 
     public static function getUserOfPositions($position_id)

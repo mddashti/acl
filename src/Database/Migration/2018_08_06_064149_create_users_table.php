@@ -25,6 +25,7 @@ class CreateUsersTable extends Migration
             $table->boolean('gender')->nullable();
             $table->string('password');
             $table->boolean('password_change')->default(1);
+            $table->boolean('active')->default(0);
             $table->string('avatar')->nullable();
             $table->string('signature')->nullable();
             $table->tinyInteger('system')->default(0);

@@ -1,4 +1,5 @@
 <?php
+
 namespace Niyam\ACL\Helper;
 
 class Graph
@@ -6,13 +7,15 @@ class Graph
     protected $graph;
     protected $visited = array();
 
-    public function __construct($graph) {
+    public function __construct($graph)
+    {
         $this->graph = $graph;
     }
 
     // find least number of hops (edges) between 2 nodes
     // (vertices)
-    public function breadthFirstSearch($origin, $destination) {
+    public function breadthFirstSearch($origin, $destination)
+    {
         // mark all nodes as unvisited
         foreach ($this->graph as $vertex => $adj) {
             $this->visited[$vertex] = false;
@@ -28,7 +31,7 @@ class Graph
         $path = array();
         $path[$origin] = new \SplDoublyLinkedList();
         $path[$origin]->setIteratorMode(
-            \SplDoublyLinkedList::IT_MODE_FIFO|\SplDoublyLinkedList::IT_MODE_KEEP
+            \SplDoublyLinkedList::IT_MODE_FIFO | \SplDoublyLinkedList::IT_MODE_KEEP
         );
 
         $path[$origin]->push($origin);
@@ -68,11 +71,11 @@ class Graph
             // return $path[$destination];
 
             $ret = [];
-            foreach($path[$destination] as $p){
+            foreach ($path[$destination] as $p) {
                 $ret[] = (int) $p;
             }
             return $ret;
-        }else {
+        } else {
             // echo "No route from $origin to $destinationn";
             return [];
         }

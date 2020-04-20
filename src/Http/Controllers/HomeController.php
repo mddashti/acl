@@ -136,6 +136,14 @@ class HomeController extends BaseController
     public function test(ACLService $service, SMSService $smsService)
     {
 
+        $userName = 'aa@aa.aa';
+        $user = User::where(function ($query) use ($userName) {
+            $query->where('email', $userName)
+                ->orWhere('username', $userName);
+        })->where('active', 0)->first();
+
+        return $user;
+
         $a = $service->createUser([
             'firstname' => 'ttt@ttt.ttt12',
             'email' => 'ttt@ttt.ttt1234',
@@ -148,7 +156,7 @@ class HomeController extends BaseController
         //$this->basic_email('project@shiraz.ir');
         //return $this->basic_email('abediyeh.hossein@gmail.com');
         //return $smsService->getCreditSample();
-        return $smsService->enqueueSample(['09138562838','09176791488','09132585269','09177006775']);
+        return $smsService->enqueueSample(['09138562838', '09176791488', '09132585269', '09177006775']);
 
         $a = $service->getUsersOfRole(2);
 

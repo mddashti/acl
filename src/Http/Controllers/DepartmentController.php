@@ -133,6 +133,6 @@ class DepartmentController extends BaseController
 
     public function deleteDepartment($department)
     {
-        return (string)Department::findOrFail($department)->delete();
+        return (string) Department::findOrFail($department)->delete();
     }
 }

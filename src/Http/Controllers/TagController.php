@@ -21,12 +21,12 @@ class TagController extends BaseController
 
     public function deleteTag($tag)
     {
-        return (string)Tag::findOrFail($tag)->delete();
+        return (string) Tag::findOrFail($tag)->delete();
     }
 
     public function editTag($tag)
     {
         $data = $this->request->all();
-        return (string)Tag::findOrFail($tag)->update($data);
+        return (string) Tag::findOrFail($tag)->update($data);
     }
 }

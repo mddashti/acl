@@ -1,6 +1,5 @@
 <?php
 
-
 interface SMSInterface
 {
     public function send($message, $recipientNumbers, $smsNumber = null);
