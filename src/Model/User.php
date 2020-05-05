@@ -14,9 +14,7 @@ class User extends BaseModel implements AuthenticatableContract
     use Authenticatable, HasRoles, Notifiable;
     protected $guard_name = 'api';
 
-    protected $fillable = [
-        'name', 'mobile', 'username', 'personnel_code', 'gender', 'avatar', 'signature', 'email', 'password', 'password_change'
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = ['pivot', 'password', 'updated_at', 'deleted_at', 'roles', 'permissions'];
 
@@ -34,4 +32,36 @@ class User extends BaseModel implements AuthenticatableContract
     {
         return $this->roles()->where('type', 1);
     }
+
+    #region scopes
+    public function scopeOfName($query, $name)
+    {
+        if (empty($name))
+            return $query;
+        return $query->where('firstname', $name);
+    }
+
+    public function scopeOfFamily($query, $family)
+    {
+        if (empty($family))
+            return $query;
+        return $query->where('lastname', $family);
+    }
+
+    public function scopeOfPersonnelCode($query, $personnelCode)
+    {
+        if (empty($personnelCode))
+            return $query;
+        return $query->where('personnel_code', $personnelCode);
+    }
+
+    public function scopeOfPosition($query, $position)
+    {
+        if (empty($position))
+            return $query;
+        return $query->whereHas('positions', function ($q) use ($position) {
+            $q->where('id', $position);
+        });
+    }
+    #endregion
 }

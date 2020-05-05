@@ -3,6 +3,7 @@
 namespace Niyam\ACL\Http\Controllers;
 
 use Niyam\ACL\Model\User;
+use Niyam\ACL\Model\UserVendor;
 use Niyam\ACL\Model\Tag;
 use Illuminate\Http\Response;
 use Niyam\ACL\Model\Department;
@@ -18,7 +19,7 @@ class RoleController extends BaseController
     public function getRelation($roleX)
     {
         // role 1 origin
-        $roleX = (int)$roleX;
+        $roleX = (int) $roleX;
         // role 2 destination
         $roleY = $this->request->get('y');
         // level
@@ -100,12 +101,12 @@ class RoleController extends BaseController
             $query = Role::where(['parent_id' => $parentId, 'type' => 1])->get();
         if (count($query) > 0)
             foreach ($query as $row) {
-                $getDepartmentName = Department::where('id',$row->department_id)->first();
+                $getDepartmentName = Department::where('id', $row->department_id)->first();
                 $departmentName = $getDepartmentName ? $getDepartmentName->name : '';
                 if ($parentId == 0) {
                     $arr['id'] = $row->id;
                     $arr['rawText'] = $row->title;
-                    $arr['text'] = $row->title.'-'.$departmentName;
+                    $arr['text'] = $row->title . '-' . $departmentName;
                     $arr['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,
@@ -124,7 +125,7 @@ class RoleController extends BaseController
                     $i = count($arrChild);
                     // زیر گروههای درخت
                     $arrChild[$i]['id'] = $row->id;
-                    $arrChild[$i]['text'] = $row->title.'-'.$departmentName;
+                    $arrChild[$i]['text'] = $row->title . '-' . $departmentName;
                     $arrChild[$i]['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,
@@ -148,11 +149,11 @@ class RoleController extends BaseController
             $query = Role::where(['parent_id' => $parentId, 'type' => 1])->get();
         if (count($query) > 0)
             foreach ($query as $row) {
-                $getDepartmentName = Department::where('id',$row->department_id)->first();
+                $getDepartmentName = Department::where('id', $row->department_id)->first();
                 $departmentName = $getDepartmentName ? $getDepartmentName->name : '';
                 if ($parentId == 0) {
                     $arr['value'] = $row->id;
-                    $arr['text'] = $row->title.'-'.$departmentName;
+                    $arr['text'] = $row->title . '-' . $departmentName;
                     $arr['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,
@@ -171,7 +172,7 @@ class RoleController extends BaseController
                     $i = count($arrChild);
                     // زیر گروههای درخت
                     $arrChild[$i]['value'] = $row->id;
-                    $arrChild[$i]['text'] = $row->title.'-'.$departmentName;
+                    $arrChild[$i]['text'] = $row->title . '-' . $departmentName;
                     $arrChild[$i]['data'] = [
                         'parentId' => $row->parent_id,
                         'name' => $row->name,
@@ -246,6 +247,9 @@ class RoleController extends BaseController
     //POST {position}/users or /{role}/users
     public function assignRoleToUsers($role)
     {
+        $a = UserVendor::get();
+        return $a;
+
         $users = $this->request->users;
         $role = Role::findOrFail($role);
         $role->users()->sync($users);
@@ -254,22 +258,22 @@ class RoleController extends BaseController
 
     public function HANDLE_VENDOR_USER($role, $users)
     {
-        if($role->name != 'expert_vendor') return;
+        if ($role->name != 'expert_vendor') return;
         $deActiveExistsExpertUsers = DB::connection('vendor')->table('vendor_users')
-                    ->where('type', 4)/*->whereIn('sso_id', $users)*/->update([
-                        'active' => 0
-                    ]);
-        
-        foreach($users as $userId){
+            ->where('type', 4)/*->whereIn('sso_id', $users)*/->update([
+                'active' => 0
+            ]);
+
+        foreach ($users as $userId) {
             $existUser = DB::connection('vendor')->table('vendor_users')
-                                ->where('type', 4)->where('sso_id', $userId)->update([
-                                    'active' => 1
-                                ]);
-            if($existUser){
+                ->where('type', 4)->where('sso_id', $userId)->update([
+                    'active' => 1
+                ]);
+            if ($existUser) {
                 // $existUser->update(['active' => 1]);
-            }else{
+            } else {
                 $user = User::where('id', $userId)->first();
-                if($user){
+                if ($user) {
                     DB::connection('vendor')->table('vendor_users')->insert([
                         'username'      => $user->username,
                         'sso_id'        => $user->id,
@@ -346,11 +350,11 @@ class RoleController extends BaseController
 
         $getTagType = Tag::where('id', $tag)->first('type');
 
-        if($getTagType['type'] == 1){
+        if ($getTagType['type'] == 1) {
             foreach ($positions as $position) {
                 PositionTag::create(['tag_id' => $tag, 'parent_position_id' => $owner, 'position_id' => $position, 'type' => $getTagType['type']]);
             }
-        }else/* if($getTagType['type'] == 0)*/{
+        } else/* if($getTagType['type'] == 0)*/ {
             PositionTag::create(['tag_id' => $tag, 'parent_position_id' => $owner, 'position_id' => null, 'type' => $getTagType['type']]);
         }
     }

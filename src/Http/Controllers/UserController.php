@@ -6,29 +6,26 @@ use Niyam\ACL\Model\User;
 use Illuminate\Http\Response;
 use Niyam\ACL\Service\ACLService;
 use Spatie\Permission\Models\Role;
-use Spatie\QueryBuilder\QueryBuilder;
 use Niyam\ACL\Infrastructure\BaseController;
 
 define('DS', DIRECTORY_SEPARATOR);
 
 class UserController extends BaseController
 {
-    // private $guardName = 'Niyam\ACL\Model\User';
-
     public function panel(ACLService $service)
     {
         $user = $this->user;
         $isAdmin = $service->hasRole('acl_admin')['isSuccess'];
-        if(!$isAdmin) abort(4*100+1+2);
-        return view('panel')->with(['user'=>$user, 'isAdmin'=>$isAdmin]);
+        if (!$isAdmin) abort(4 * 100 + 1 + 2);
+        return view('panel')->with(['user' => $user, 'isAdmin' => $isAdmin]);
     }
 
     public function index(ACLService $service)
     {
         $user = $this->user;
         $isAdmin = $service->hasRole('acl_admin')['isSuccess'];
-        if(!$isAdmin) abort(4*100+1+2);
-        return view('panels')->with(['user'=>$user, 'isAdmin'=>$isAdmin]);
+        if (!$isAdmin) abort(4 * 100 + 1 + 2);
+        return view('panels')->with(['user' => $user, 'isAdmin' => $isAdmin]);
     }
 
     public function getAvatar($user)
@@ -86,7 +83,20 @@ class UserController extends BaseController
 
     public function getUsers()
     {
-        return User::orderBy('id')->get();
+        $requestData = $this->request->all();
+        $filterItems = [
+            'name' => $requestData['name'] ?? null,
+            'family' => $requestData['family'] ?? null,
+            'personnel_code' => $requestData['personnel_code'] ?? null,
+            'position' => $requestData['position'] ?? null,
+        ];
+
+        return User::ofName($filterItems['name'])
+            ->ofFamily($filterItems['family'])
+            ->ofPersonnelCode($filterItems['personnel_code'])
+            ->ofPosition($filterItems['position'])
+            ->orderBy('id')
+            ->get();
     }
 
     public function addRolesToUser($userId)
@@ -131,16 +141,16 @@ class UserController extends BaseController
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users'.DS.'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $data['avatar'] = DS.'storage'.DS.'users'.DS.'avatar'.DS.$avatarUpload;
+            $data['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users'.DS.'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $data['signature'] = DS.'storage'.DS.'users'.DS.'signature'.DS.$signatureUpload;
+            $data['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
 
         return User::create([
@@ -165,16 +175,16 @@ class UserController extends BaseController
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users'.DS.'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $data['avatar'] = DS.'storage'.DS.'users'.DS.'avatar'.DS.$avatarUpload;
+            $data['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users'.DS.'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $data['signature'] = DS.'storage'.DS.'users'.DS.'signature'.DS.$signatureUpload;
+            $data['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
         return User::where('id', $userId)->update($data);
     }
@@ -199,16 +209,16 @@ class UserController extends BaseController
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users'.DS.'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $userData['avatar'] = DS.'storage'.DS.'users'.DS.'avatar'.DS.$avatarUpload;
+            $userData['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users'.DS.'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $userData['signature'] = DS.'storage'.DS.'users'.DS.'signature'.DS.$signatureUpload;
+            $userData['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
 
         $user =  User::create([
@@ -240,16 +250,16 @@ class UserController extends BaseController
         if ($this->request->hasFile('avatar')) {
             $avatarUpload = FileController::upload(
                 $this->request->file('avatar'),
-                storage_path('users'.DS.'avatar')
+                storage_path('users' . DS . 'avatar')
             );
-            $userData['avatar'] = DS.'storage'.DS.'users'.DS.'avatar'.DS.$avatarUpload;
+            $userData['avatar'] = DS . 'storage' . DS . 'users' . DS . 'avatar' . DS . $avatarUpload;
         }
         if ($this->request->hasFile('signature')) {
             $signatureUpload = FileController::upload(
                 $this->request->file('signature'),
-                storage_path('users'.DS.'signature')
+                storage_path('users' . DS . 'signature')
             );
-            $userData['signature'] = DS.'storage'.DS.'users'.DS.'signature'.DS.$signatureUpload;
+            $userData['signature'] = DS . 'storage' . DS . 'users' . DS . 'signature' . DS . $signatureUpload;
         }
 
         $user = User::findOrFail($userId);

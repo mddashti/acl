@@ -20,11 +20,13 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('username')->unique();
             $table->string('mobile');
+            $table->integer('sms_code');
             $table->string('email')->nullable();
             $table->string('personnel_code')->nullable();
             $table->boolean('gender')->nullable();
             $table->string('password');
             $table->boolean('password_change')->default(1);
+            $table->boolean('active')->default(0);
             $table->string('avatar')->nullable();
             $table->string('signature')->nullable();
             $table->tinyInteger('system')->default(0);

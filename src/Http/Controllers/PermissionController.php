@@ -187,6 +187,6 @@ class PermissionController extends BaseController
 
     public function deletePermission($permission)
     {
-        return (string)Permission::findOrFail($permission)->delete();
+        return (string) Permission::findOrFail($permission)->delete();
     }
 }
