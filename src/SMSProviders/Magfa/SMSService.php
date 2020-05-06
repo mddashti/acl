@@ -192,20 +192,16 @@ class SMSService
         }
     }
 
-
-
-
-
     /**
      * method : enqueueSample
      * this method provides a sample usage of "enqueue" service
      * @see simpleEnqueueSample()
      * @return void
      */
-    public function enqueueSample($recipientNumbers = [])
+    public function enqueueSample($recipientNumbers = [], $message=null)
     {
         $method = "enqueue"; // name of the service
-        $message = "سلام تست پیامک سامانه ی PMIS"; // [FILL] your message to send
+        $message = $message ?? "تست پیامک سامانه ی ACL"; // [FILL] your message to send
         $senderNumber = "3000137720"; // [FILL] sender number; which is your 3000xxx number
         // [FILL] recipient number; here we have multiple recipients (2)
         $recipientNumbers = $recipientNumbers ?? array('09138562838'); // [FILL] you can add more items here ...
@@ -222,17 +218,24 @@ class SMSService
 
         // sending the request via webservice
         $response = $this->call($method, $params);
+        if(!$response) return 'Error!';
 
+        $ret = [];
         foreach ($response as $result) {
             // compare the response with the ERROR_MAX_VALUE
             if ($result <= $this->ERROR_MAX_VALUE) {
-                echo "An error occured <br> ";
-                echo "Error Code : $result ; Error Title : " . $this->errors[$result]['title'] . ' {' . $this->errors[$result]['desc'] . '}';
+                $ret['error'][] = [$this->errors[$result]['title'],$this->errors[$result]['desc']];
+                // echo "An error occured <br> ";
+                // echo "Error Code : $result ; Error Title : " . $this->errors[$result]['title'] . ' {' . $this->errors[$result]['desc'] . '}';
+
             } else {
-                echo "Message has been successfully sent ; MessageId : $result";
+                $ret['successfull'][] = $result;
+                // echo "Message has been successfully sent ; MessageId : $result";
             }
-            echo "<br>";
+            // echo "<br>";
         }
+
+        return $ret;
     }
 
 

@@ -83,7 +83,20 @@ class UserController extends BaseController
 
     public function getUsers()
     {
-        return User::orderBy('id')->get();
+        $requestData = $this->request->all();
+        $filterItems = [
+            'name' => $requestData['name'] ?? null,
+            'family' => $requestData['family'] ?? null,
+            'personnel_code' => $requestData['personnel_code'] ?? null,
+            'position' => $requestData['position'] ?? null,
+        ];
+
+        return User::ofName($filterItems['name'])
+            ->ofFamily($filterItems['family'])
+            ->ofPersonnelCode($filterItems['personnel_code'])
+            ->ofPosition($filterItems['position'])
+            ->orderBy('id')
+            ->get();
     }
 
     public function addRolesToUser($userId)

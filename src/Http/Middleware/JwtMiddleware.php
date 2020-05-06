@@ -12,10 +12,9 @@ class JwtMiddleware
     protected $exceptRoutes = [
         'captcha/*',
         'auth/*',
-        'test',
         'test/*',
         'api/login',
-        'users', // need 4 create user
+        'users', // need for create user
     ];
 
     public function handleExcept($request)
@@ -39,7 +38,7 @@ class JwtMiddleware
 
         if ($this->handleExcept($request)) return $next($request);
 
-        $token = $request->ajax() ? $request->header('Authorization') : $request->cookie('access_token');
+        $token = $request->cookie('access_token') ?? $request->header('Authorization');
 
         if (!$token) {
             if ($request->ajax()) return response()->json(['error' => 'Token not provided.'], 401);
@@ -59,9 +58,7 @@ class JwtMiddleware
             return redirect(env('LOGIN_URL'));
         }
 
-        //$user = User::find($credentials->sub);
         $user = $credentials->sub;
-        // Now let's put the user in the request class so that you can grab it from there
         $request->auth = json_decode($user);
 
         if ($request->auth->password_change && $uri != 'password' && $uri != 'auth/logout')

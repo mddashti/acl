@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Niyam\ACL\Infrastructure\BaseController;
-
+use Niyam\ACL\SMSProviders\Magfa\SMSService;
 
 class AuthController extends BaseController
 {
@@ -86,13 +86,51 @@ class AuthController extends BaseController
 
     public function recoveryPassword()
     {
-        return view('recovery-password');
+        return view('recovery');
     }
 
-    public function changePassword()
+    public function changePassword2(Request $request, SMSService $smsService)
     {
-        echo "change PW";
+        $mobile = $request->mobile;
+        $code = $request->code;
+        $password = $request->password;
+        $password_confirmed = $request->password_confirmation;
+
+        if(strlen($password) < 6)
+            return 'کلمه عبور کوتاه است. (حداقل ۶ حرف)';
+        else if($password != $password_confirmed)
+            return 'کلمات عبور یکسان نمی باشند.';
+
+        $user = User::where('mobile', $mobile)->where('sms_code', $code)->first();
+        if(!$user) return 'کد اشتباه است.';
+
+        $user->sms_code = null;
+        $user->password = password_hash($password, PASSWORD_BCRYPT);
+        $user->save();
+        return redirect('/');
     }
+
+    public function changePassword(Request $request, SMSService $smsService)
+    {
+        $mobile = $request->mobile;
+        $username = $request->username;
+
+        $user = User::where('mobile', $mobile)->where(function($q) use ($username){
+            return $q->where('username', $username)->orWhere('email', $username);
+        })->first();
+        if(!$user) return 'کاربری با مشخصات فوق یافت نشد.';
+
+        $code = rand(11111, 99999);
+        $txt = "کد ورود: $code";
+        $user->sms_code = $code;
+        $user->save();
+        $ss = $smsService->enqueueSample([$mobile], $txt);
+        if($ss['successfull']){
+            return redirect('/auth/recovery?mobile='.$mobile);
+        }
+    }
+
+
 
     // API
     public function apiAuthenticate(Request $request)

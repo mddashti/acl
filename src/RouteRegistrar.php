@@ -58,6 +58,8 @@ class RouteRegistrar
                         $router->any('logout', 'AuthController@logout');
                         $router->get('recovery', ['uses' => 'AuthController@recoveryPassword']);
                         $router->post('recovery', ['uses' => 'AuthController@changePassword']);
+                        $router->post('recovery2', ['uses' => 'AuthController@changePassword2']);
+
                     }
                 );
 
@@ -101,7 +103,6 @@ class RouteRegistrar
                         $router->get('{role}', 'RoleController@getRole');
                         $router->delete('{role}', 'RoleController@deleteRole');
                         $router->patch('{role}', 'RoleController@editRole');
-                        // $router->get('/{role}/users', 'UserController@getUsersByRole');
                         $router->get('/{role}/users', 'UserController@usersRole');
                         $router->post('/{role}/users', 'RoleController@assignRoleToUsers');
                         $router->delete('/{role}/users/{user}', 'RoleController@revokeUserRole');
